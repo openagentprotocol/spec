@@ -6,7 +6,7 @@
 		</div>
 		<div class="flex gap-6 text-sm text-[var(--color-text-muted)]">
 			<a href="/docs" class="hover:text-[var(--color-text)] transition-colors">Docs</a>
-			<a href="https://github.com/openagentprotocol/oap" target="_blank" rel="noopener" class="hover:text-[var(--color-text)] transition-colors">GitHub</a>
+			<a href="https://github.com/openagentprotocol/spec" target="_blank" rel="noopener" class="hover:text-[var(--color-text)] transition-colors">GitHub</a>
 		</div>
 	</div>
 </footer>

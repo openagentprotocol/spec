@@ -11,7 +11,7 @@
 			<a href="/docs" class="px-8 py-3 rounded-lg bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold transition-colors">
 				Read the docs
 			</a>
-			<a href="https://github.com/openagentprotocol/oap" target="_blank" rel="noopener" class="px-8 py-3 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] text-[var(--color-text)] font-semibold transition-colors">
+			<a href="https://github.com/openagentprotocol/spec" target="_blank" rel="noopener" class="px-8 py-3 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] text-[var(--color-text)] font-semibold transition-colors">
 				View on GitHub
 			</a>
 		</div>

@@ -18,7 +18,7 @@
 				</a>
 			{/each}
 			<a
-				href="https://github.com/openagentprotocol/oap"
+				href="https://github.com/openagentprotocol/spec"
 				target="_blank"
 				rel="noopener"
 				class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
