@@ -1,50 +1,49 @@
 # OAP — Open Agent Protocol
 
-An open standard for agent interoperability — how agents discover each other, exchange events and commands, and observe what happened, across distributed systems.
+Events are everywhere. Agents are everywhere. But there is no common way for agents to discover each other, exchange events and commands, or observe what happened.
 
-[Documentation](https://openagentprotocol.io/) | [Specification](specs/overview.md)
+OAP is a specification for agent interoperability — how agents discover each other, exchange structured events and commands, and produce observable execution traces — across any runtime, platform, language, or transport.
 
----
+OAP doesn't care how an agent works internally. It only cares about the interaction surface: what events go in, what commands come out, and how to discover the agent.
 
-## Overview
+If you are new to OAP, start with the [Overview](specs/overview.md) for the protocol's goals and design, then explore [Discovery](specs/discovery.md) and the [Agent capabilities](specs/agents/registry.md).
 
-OAP lets **anyone expose skills, services, or capabilities** to any agent — without building bespoke integrations.
+## OAP Documents
 
-OAP doesn't care how the agent works internally. It only cares about the interaction surface: what events go in, what commands come out, and how to discover the agent.
+|  | Pre-release | WIP |
+|---|:---:|:---:|
+| **Core Specification:** | | |
+| [OAP Overview](specs/overview.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/overview.md) | [WIP](specs/overview.md) |
+| [Discovery](specs/discovery.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/discovery.md) | [WIP](specs/discovery.md) |
+| [Versioning](specs/versioning.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/versioning.md) | [WIP](specs/versioning.md) |
+| [Conformance](specs/conformance.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/conformance.md) | [WIP](specs/conformance.md) |
+| | | |
+| **Agent Capabilities:** | | |
+| [Registry](specs/agents/registry.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/agents/registry.md) | [WIP](specs/agents/registry.md) |
+| [Lifecycle](specs/agents/lifecycle.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/agents/lifecycle.md) | [WIP](specs/agents/lifecycle.md) |
+| [Events](specs/agents/events.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/agents/events.md) | [WIP](specs/agents/events.md) |
+| [Commands](specs/agents/commands.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/agents/commands.md) | [WIP](specs/agents/commands.md) |
+| [Memory](specs/agents/memory.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/agents/memory.md) | [WIP](specs/agents/memory.md) |
+| | | |
+| **Observability:** | | |
+| [Tracing](specs/observability/tracing.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/observability/tracing.md) | [WIP](specs/observability/tracing.md) |
+| | | |
+| **Transport Bindings:** | | |
+| [REST](specs/transports/rest.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/transports/rest.md) | [WIP](specs/transports/rest.md) |
+| [MCP](specs/transports/mcp.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/transports/mcp.md) | [WIP](specs/transports/mcp.md) |
+| [A2A](specs/transports/a2a.md) | [v0.1.0](https://github.com/openagentprotocol/spec/blob/v0.1.0/specs/transports/a2a.md) | [WIP](specs/transports/a2a.md) |
 
-## Repository Structure
+> The most recent pre-release is [v0.1.0](https://github.com/openagentprotocol/spec/releases/tag/v0.1.0). A stable release tag (`oap@stable`) will be created once the specification reaches production readiness.
 
-```
-protocol/v1/           Protocol artifacts (source of truth)
-├── schemas/            JSON Schema files for all capabilities
-├── services/           OpenAPI specs for REST transport
-└── examples/           Example manifests and payloads
+## Protocol Artifacts
 
-specs/                  Human-readable specification (Markdown)
-├── overview.md         Protocol overview
-├── discovery.md        /.well-known/oap manifest
-├── agents/             Agent capabilities (registry, lifecycle, events, commands, memory)
-├── observability/      Tracing capability
-├── transports/         REST, MCP, A2A transport bindings
-├── versioning.md       Version strategy
-└── conformance.md      Compliance requirements
+The machine-readable protocol definitions live under [`protocol/v1/`](protocol/v1/) and are the source of truth:
 
-website/                Public website (SvelteKit, dark theme)
-├── src/routes/         Pages (landing, docs, playground)
-└── src/lib/components/ Reusable UI components
-
-scripts/                Validation tooling
-```
-
-## Core Concepts
-
-| Primitive | Description |
+| Path | Contents |
 |---|---|
-| **Agent** | Something that accepts events and produces commands |
-| **Event** | An immutable observed fact sent to an agent |
-| **Command** | An intent produced by an agent (not executed by it) |
-| **Execution Trace** | Observable record of what happened |
-| **Discovery** | `/.well-known/oap` manifest |
+| [`protocol/v1/schemas/`](protocol/v1/schemas/) | JSON Schema files for all capabilities |
+| [`protocol/v1/services/`](protocol/v1/services/) | OpenAPI specs for REST transport |
+| [`protocol/v1/examples/`](protocol/v1/examples/) | Example manifests and payloads |
 
 ## Quick Start
 
@@ -55,9 +54,15 @@ node scripts/validate-schemas.mjs
 # Validate example payloads
 node scripts/validate-examples.mjs
 
-# Run the website
+# Run the website locally
 cd website && npm install && npm run dev
 ```
+
+## Community
+
+- [Website & Documentation](https://openagentprotocol.io/)
+- [GitHub Issues](https://github.com/openagentprotocol/spec/issues) — bug reports & feature requests
+- [Contributing](https://github.com/openagentprotocol/spec/blob/main/CONTRIBUTING.md) — how to contribute
 
 ## License
 
