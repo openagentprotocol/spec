@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagentprotocol.io/v1/schemas/agents/commands.json",
+  "title": "OAP Agent Commands",
+  "description": "Schema for the command observation capability (io.oap.agents.commands).",
+  "$defs": {
+    "command": {
+      "type": "object",
+      "description": "An intent to change the system. Agents produce commands but do not execute them.",
+      "required": ["type", "data", "metadata"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Command type identifier (e.g. ProposeCounter, AdjustPrice)."
+        },
+        "data": {
+          "type": "object",
+          "description": "The command payload — structure is domain-specific.",
+          "additionalProperties": true
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Key-value metadata (agentId, traceId, correlationId, etc.).",
+          "additionalProperties": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "commandList": {
+      "type": "object",
+      "description": "Response body for GET /commands.",
+      "required": ["commands"],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/command" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

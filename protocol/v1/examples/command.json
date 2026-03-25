@@ -1,0 +1,12 @@
+{
+  "type": "ProposeCounter",
+  "data": {
+    "salary": 100000,
+    "startDate": "2025-09-01"
+  },
+  "metadata": {
+    "agentId": "negotiation",
+    "traceId": "trace-001",
+    "correlationId": "abc-123"
+  }
+}

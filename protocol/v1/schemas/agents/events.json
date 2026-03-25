@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagentprotocol.io/v1/schemas/agents/events.json",
+  "title": "OAP Agent Events",
+  "description": "Schema for event delivery capability (io.oap.agents.events).",
+  "$defs": {
+    "event": {
+      "type": "object",
+      "description": "An immutable observed fact. Events are the input to agents.",
+      "required": ["type", "data", "metadata"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Event type identifier (e.g. ContractProposed, DemandSignalReceived)."
+        },
+        "data": {
+          "type": "object",
+          "description": "The event payload — structure is domain-specific.",
+          "additionalProperties": true
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Key-value metadata (correlationId, source, timestamp, etc.).",
+          "additionalProperties": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "eventList": {
+      "type": "object",
+      "description": "Response body for GET /events.",
+      "required": ["events"],
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/event" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagentprotocol.io/v1/schemas/agents/registry.json",
+  "title": "OAP Agent Registry",
+  "description": "Schema for agent descriptors and the agent registry capability (io.oap.agents.registry).",
+  "$defs": {
+    "agentDescriptor": {
+      "type": "object",
+      "description": "The identity card for an agent — what it does, what events it accepts, what commands it produces.",
+      "required": ["id", "name", "accepts", "produces", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Globally unique agent identifier."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this agent does."
+        },
+        "type": {
+          "type": "string",
+          "description": "Agent type classification (e.g. negotiator, sensor, reviewer)."
+        },
+        "accepts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Event types this agent accepts as input."
+        },
+        "produces": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command types this agent can produce as output."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["running", "paused", "stopped", "error"],
+          "description": "Current agent status."
+        }
+      },
+      "additionalProperties": false
+    },
+    "agentRegistration": {
+      "type": "object",
+      "description": "Request body for registering a new agent. Status defaults to stopped.",
+      "required": ["id", "name", "accepts", "produces"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Globally unique agent identifier."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this agent does."
+        },
+        "type": {
+          "type": "string",
+          "description": "Agent type classification."
+        },
+        "accepts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Event types this agent accepts."
+        },
+        "produces": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command types this agent produces."
+        }
+      },
+      "additionalProperties": false
+    },
+    "agentList": {
+      "type": "object",
+      "description": "Response body for GET /agents.",
+      "required": ["agents"],
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/agentDescriptor" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

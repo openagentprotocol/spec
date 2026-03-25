@@ -1,0 +1,13 @@
+{
+  "type": "ContractProposed",
+  "data": {
+    "salary": 95000,
+    "startDate": "2025-09-01",
+    "benefits": ["health", "dental"]
+  },
+  "metadata": {
+    "correlationId": "abc-123",
+    "source": "hr-system",
+    "timestamp": "2025-07-01T10:30:00Z"
+  }
+}

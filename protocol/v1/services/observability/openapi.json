@@ -1,0 +1,163 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OAP Observability Service",
+    "description": "REST API for the io.oap.observability service — execution traces and audit trail.",
+    "version": "2025-07-01",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "{endpoint}",
+      "description": "OAP-compliant endpoint (from discovery manifest)",
+      "variables": {
+        "endpoint": {
+          "default": "http://localhost:5100"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/traces": {
+      "get": {
+        "operationId": "listTraces",
+        "summary": "List recent execution traces",
+        "tags": ["Execution Traces"],
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by agent ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of execution traces",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/observability/tracing.json#/$defs/traceList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/traces/{traceId}": {
+      "parameters": [
+        {
+          "name": "traceId",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Trace identifier"
+        }
+      ],
+      "get": {
+        "operationId": "getTrace",
+        "summary": "Get a specific execution trace",
+        "tags": ["Execution Traces"],
+        "responses": {
+          "200": {
+            "description": "Execution trace detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/observability/tracing.json#/$defs/executionTrace"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trace not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/traces": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Agent identifier"
+        }
+      ],
+      "get": {
+        "operationId": "listAgentTraces",
+        "summary": "List traces for a specific agent",
+        "tags": ["Execution Traces"],
+        "responses": {
+          "200": {
+            "description": "List of execution traces for the agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/observability/tracing.json#/$defs/traceList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/traces/latest": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Agent identifier"
+        }
+      ],
+      "get": {
+        "operationId": "getLatestAgentTrace",
+        "summary": "Get the latest trace for an agent",
+        "tags": ["Execution Traces"],
+        "responses": {
+          "200": {
+            "description": "Latest execution trace for the agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/observability/tracing.json#/$defs/executionTrace"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent or trace not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Execution Traces", "description": "io.oap.observability.tracing — What happened when an agent processed an event" }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagentprotocol.io/v1/schemas/agents/memory.json",
+  "title": "OAP Agent Memory",
+  "description": "Schema for the agent memory capability (io.oap.agents.memory). Extends io.oap.agents.registry. The memory response body is opaque — different runtimes return different formats.",
+  "$defs": {
+    "agentMemory": {
+      "type": "object",
+      "description": "Agent memory state. The protocol does not prescribe its structure — it is opaque and implementation-specific.",
+      "required": ["agentId", "state"],
+      "properties": {
+        "agentId": {
+          "type": "string",
+          "description": "The agent this memory belongs to."
+        },
+        "state": {
+          "description": "The memory state — opaque to the protocol. Could be any JSON value.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

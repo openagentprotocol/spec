@@ -1,0 +1,345 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OAP Agent Service",
+    "description": "REST API for the io.oap.agents service — agent management, event delivery, command observation, and agent memory.",
+    "version": "2025-07-01",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "{endpoint}",
+      "description": "OAP-compliant endpoint (from discovery manifest)",
+      "variables": {
+        "endpoint": {
+          "default": "http://localhost:5100"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/.well-known/oap": {
+      "get": {
+        "operationId": "getDiscoveryManifest",
+        "summary": "Discovery manifest",
+        "description": "Returns the OAP discovery manifest describing available agents, services, capabilities, and transport bindings.",
+        "tags": ["Discovery"],
+        "responses": {
+          "200": {
+            "description": "Discovery manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/discovery.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents": {
+      "get": {
+        "operationId": "listAgents",
+        "summary": "List all registered agents",
+        "tags": ["Agent Registry"],
+        "responses": {
+          "200": {
+            "description": "List of agent descriptors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/agents/registry.json#/$defs/agentList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "registerAgent",
+        "summary": "Register a new agent",
+        "tags": ["Agent Registry"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/agents/registry.json#/$defs/agentRegistration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agent registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/agents/registry.json#/$defs/agentDescriptor"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          },
+          "409": {
+            "description": "Agent already registered",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Agent identifier"
+        }
+      ],
+      "get": {
+        "operationId": "getAgent",
+        "summary": "Get agent detail",
+        "tags": ["Agent Registry"],
+        "responses": {
+          "200": {
+            "description": "Agent descriptor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/agents/registry.json#/$defs/agentDescriptor"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeAgent",
+        "summary": "Remove an agent",
+        "tags": ["Agent Registry"],
+        "responses": {
+          "204": { "description": "Agent removed" },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/pause": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Agent identifier"
+        }
+      ],
+      "post": {
+        "operationId": "pauseAgent",
+        "summary": "Pause a running agent",
+        "tags": ["Agent Lifecycle"],
+        "responses": {
+          "204": { "description": "Agent paused" },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/resume": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Agent identifier"
+        }
+      ],
+      "post": {
+        "operationId": "resumeAgent",
+        "summary": "Resume a paused agent",
+        "tags": ["Agent Lifecycle"],
+        "responses": {
+          "204": { "description": "Agent resumed" },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "post": {
+        "operationId": "sendEvent",
+        "summary": "Send an event to the runtime",
+        "description": "The runtime routes the event to matching agents asynchronously.",
+        "tags": ["Event Delivery"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/agents/events.json#/$defs/event"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Event accepted for processing" },
+          "400": {
+            "description": "Invalid event",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listEvents",
+        "summary": "List recent events",
+        "tags": ["Event Delivery"],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by event type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of recent events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/agents/events.json#/$defs/eventList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/commands": {
+      "get": {
+        "operationId": "listCommands",
+        "summary": "List recently produced commands",
+        "tags": ["Command Log"],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by command type"
+          },
+          {
+            "name": "agentId",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter by agent ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of recent commands",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/agents/commands.json#/$defs/commandList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/memory": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Agent identifier"
+        }
+      ],
+      "get": {
+        "operationId": "getAgentMemory",
+        "summary": "Get current memory state for an agent",
+        "description": "The memory response body is opaque — different runtimes return different formats.",
+        "tags": ["Agent Memory"],
+        "responses": {
+          "200": {
+            "description": "Agent memory state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/agents/memory.json#/$defs/agentMemory"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "../../schemas/error.json" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Discovery", "description": "Protocol discovery" },
+    { "name": "Agent Registry", "description": "io.oap.agents.registry — Register, remove, list, get agents" },
+    { "name": "Agent Lifecycle", "description": "io.oap.agents.lifecycle — Pause and resume agents" },
+    { "name": "Event Delivery", "description": "io.oap.agents.events — Send events, list recent events" },
+    { "name": "Command Log", "description": "io.oap.agents.commands — List produced commands" },
+    { "name": "Agent Memory", "description": "io.oap.agents.memory — View agent memory state" }
+  ]
+}

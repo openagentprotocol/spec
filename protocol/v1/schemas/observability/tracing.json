@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagentprotocol.io/v1/schemas/observability/tracing.json",
+  "title": "OAP Execution Tracing",
+  "description": "Schema for the execution tracing capability (io.oap.observability.tracing).",
+  "$defs": {
+    "traceStep": {
+      "type": "object",
+      "description": "An optional named step within an execution trace. Structure is implementation-specific.",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Step name (e.g. salary-reasoning, validate-input)."
+        },
+        "duration": {
+          "type": "string",
+          "description": "ISO 8601 duration for this step."
+        },
+        "succeeded": {
+          "type": "boolean",
+          "description": "Whether this step succeeded."
+        },
+        "detail": {
+          "type": "object",
+          "description": "Opaque, implementation-specific detail.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionTrace": {
+      "type": "object",
+      "description": "The observable record of what happened when an agent processed an event.",
+      "required": ["traceId", "agentId", "inputEvent", "outputCommands", "startedAt", "completedAt", "duration", "succeeded"],
+      "properties": {
+        "traceId": {
+          "type": "string",
+          "description": "Unique trace identifier."
+        },
+        "agentId": {
+          "type": "string",
+          "description": "Which agent processed the event."
+        },
+        "inputEvent": {
+          "$ref": "../agents/events.json#/$defs/event",
+          "description": "The event that triggered processing."
+        },
+        "outputCommands": {
+          "type": "array",
+          "items": { "$ref": "../agents/commands.json#/$defs/command" },
+          "description": "Commands the agent produced (may be empty)."
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp — when processing started."
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp — when processing completed."
+        },
+        "duration": {
+          "type": "string",
+          "description": "ISO 8601 duration."
+        },
+        "succeeded": {
+          "type": "boolean",
+          "description": "Whether processing completed without error."
+        },
+        "error": {
+          "type": "string",
+          "description": "Error message if processing failed."
+        },
+        "steps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/traceStep" },
+          "description": "Optional named steps (implementation-specific detail)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "traceList": {
+      "type": "object",
+      "description": "Response body for GET /traces.",
+      "required": ["traces"],
+      "properties": {
+        "traces": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/executionTrace" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagentprotocol.io/v1/schemas/discovery.json",
+  "title": "OAP Discovery Manifest",
+  "description": "Schema for the /.well-known/oap discovery manifest. Every OAP-compliant endpoint must expose this at GET /.well-known/oap.",
+  "type": "object",
+  "required": ["oap"],
+  "properties": {
+    "oap": {
+      "type": "object",
+      "required": ["version", "services", "capabilities"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "OAP spec version (date-based: YYYY-MM-DD)",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "examples": ["2025-07-01"]
+        },
+        "services": {
+          "type": "object",
+          "description": "Service definitions with transport bindings. Keys are fully qualified service names (e.g. io.oap.agents).",
+          "additionalProperties": {
+            "$ref": "#/$defs/service"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "Supported capabilities with schema URLs.",
+          "items": {
+            "$ref": "#/$defs/capability"
+          }
+        },
+        "agents": {
+          "type": "array",
+          "description": "Currently registered agents (optional).",
+          "items": {
+            "$ref": "agents/registry.json#/$defs/agentDescriptor"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "service": {
+      "type": "object",
+      "description": "A top-level service domain the runtime supports.",
+      "required": ["version", "description"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Service version (date-based).",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the service."
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the service specification."
+        },
+        "rest": {
+          "$ref": "#/$defs/restTransport"
+        },
+        "mcp": {
+          "$ref": "#/$defs/mcpTransport"
+        },
+        "a2a": {
+          "$ref": "#/$defs/a2aTransport"
+        },
+        "grpc": {
+          "$ref": "#/$defs/grpcTransport"
+        }
+      },
+      "additionalProperties": false
+    },
+    "capability": {
+      "type": "object",
+      "description": "A composable capability within a service.",
+      "required": ["name", "version", "description", "spec", "schema"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Fully qualified capability name (e.g. io.oap.agents.registry).",
+          "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9_]*)*$"
+        },
+        "version": {
+          "type": "string",
+          "description": "Capability version (date-based).",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description."
+        },
+        "spec": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the capability specification."
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the JSON Schema for this capability."
+        },
+        "extends": {
+          "type": "string",
+          "description": "Parent capability this extends (if any)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "planned"],
+          "description": "Capability availability status. Omitted means active."
+        }
+      },
+      "additionalProperties": false
+    },
+    "restTransport": {
+      "type": "object",
+      "required": ["schema", "endpoint"],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the OpenAPI spec (JSON)."
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base REST endpoint URL."
+        }
+      },
+      "additionalProperties": false
+    },
+    "mcpTransport": {
+      "type": "object",
+      "required": ["transport", "server"],
+      "properties": {
+        "transport": {
+          "type": "string",
+          "enum": ["stdio", "sse"],
+          "description": "MCP transport type."
+        },
+        "server": {
+          "type": "string",
+          "description": "MCP server identifier."
+        }
+      },
+      "additionalProperties": false
+    },
+    "a2aTransport": {
+      "type": "object",
+      "required": ["agent_card_url"],
+      "properties": {
+        "agent_card_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the A2A Agent Card."
+        }
+      },
+      "additionalProperties": false
+    },
+    "grpcTransport": {
+      "type": "object",
+      "required": ["endpoint"],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "description": "gRPC endpoint address."
+        },
+        "proto": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the .proto file."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

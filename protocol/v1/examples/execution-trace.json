@@ -1,0 +1,37 @@
+{
+  "traceId": "trace-001",
+  "agentId": "negotiation",
+  "inputEvent": {
+    "type": "ContractProposed",
+    "data": { "salary": 95000 },
+    "metadata": { "correlationId": "abc-123" }
+  },
+  "outputCommands": [
+    {
+      "type": "ProposeCounter",
+      "data": { "salary": 100000 },
+      "metadata": {
+        "agentId": "negotiation",
+        "traceId": "trace-001",
+        "correlationId": "abc-123"
+      }
+    }
+  ],
+  "startedAt": "2025-07-01T10:30:00Z",
+  "completedAt": "2025-07-01T10:30:01.234Z",
+  "duration": "PT1.234S",
+  "succeeded": true,
+  "steps": [
+    {
+      "name": "salary-reasoning",
+      "duration": "PT0.800S",
+      "succeeded": true,
+      "detail": { "note": "Proposed salary is 12% below market median" }
+    },
+    {
+      "name": "start-date-validation",
+      "duration": "PT0.050S",
+      "succeeded": true
+    }
+  ]
+}

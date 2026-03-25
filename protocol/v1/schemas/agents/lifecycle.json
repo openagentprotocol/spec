@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openagentprotocol.io/v1/schemas/agents/lifecycle.json",
+  "title": "OAP Agent Lifecycle",
+  "description": "Schema for the agent lifecycle capability (io.oap.agents.lifecycle). Extends io.oap.agents.registry with pause/resume operations."
+}

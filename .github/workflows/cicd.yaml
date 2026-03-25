@@ -1,0 +1,114 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Validate protocol schemas
+        run: node scripts/validate-schemas.mjs
+
+      - name: Validate example payloads
+        run: node scripts/validate-examples.mjs
+
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./website
+
+      - name: Copy protocol artifacts to static
+        run: node scripts/copy-protocol.mjs
+        working-directory: ./website
+
+      - name: Build SvelteKit site
+        run: npm run build
+        working-directory: ./website
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-build
+          path: website/build/
+
+  docker-publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build and push Docker image
+        run: |
+          REPO_OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE=ghcr.io/${REPO_OWNER_LC}/oap-website:${{ github.sha }}
+          docker build -t $IMAGE .
+          docker push $IMAGE
+
+      - name: Set image tag output
+        id: image_tag
+        run: |
+          REPO_OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "tag=ghcr.io/${REPO_OWNER_LC}/oap-website:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+  update-iac:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: docker-publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout IaC repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.IAC_REPO }}
+          token: ${{ secrets.IAC_PAT }}
+          ref: ${{ secrets.IAC_BRANCH }}
+
+      - name: Update image tag in deployment
+        run: |
+          REPO_OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          DEPLOY_FILE="${{ secrets.IAC_DEPLOY_PATH }}"
+          sed -i 's|^\([[:space:]]*\)image:.*|\1image: ghcr.io/'"$REPO_OWNER_LC"'/oap-website:'"${{ github.sha }}"'|g' "$DEPLOY_FILE"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.IAC_PAT }}
+          commit-message: "Update OAP website image to ${{ github.sha }}"
+          branch: update-oap-website-${{ github.sha }}
+          base: ${{ secrets.IAC_BRANCH }}
+          title: "Update OAP website image to ${{ github.sha }}"
+          body: "Automated update of OAP website image tag to ${{ github.sha }}"
+          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          signoff: true
