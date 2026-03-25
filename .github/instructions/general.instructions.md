@@ -1009,3 +1009,74 @@ OAP is NOT:
 - An AI framework (agents can be human, deterministic, AI-powered, or anything)
 - An architecture prescription (no internal processing models required)
 - Tied to any language (any language can implement the protocol)
+
+---
+
+## Repository Structure & Website Build
+
+### Directory Layout
+
+```
+spec/                          ← repo root (open VS Code here)
+├── .vscode/launch.json        ← F5 debug config (launches website dev server)
+├── .github/workflows/cicd.yaml
+├── protocol/v1/               ← JSON schemas, OpenAPI specs, examples
+├── specs/                     ← Markdown spec documents
+├── scripts/                   ← Schema/example validation scripts
+├── Dockerfile
+└── website/                   ← SvelteKit static site
+    ├── scripts/copy-protocol.mjs
+    ├── nginx.conf
+    └── src/routes/docs/[...slug]/  ← dynamic pages from specs/*.md
+```
+
+### Website Stack
+
+- **SvelteKit 2** with Svelte 5, adapter-static (fully prerendered)
+- **Vite 6** with `@tailwindcss/vite`
+- **marked** for rendering `specs/*.md` → HTML at build time
+- **nginx 1.27-alpine** in production (port **3000**, not 80)
+
+### Build Pipeline
+
+1. `node scripts/copy-protocol.mjs` — copies `protocol/v1/` → `website/static/v1/` (prebuild)
+2. `vite build` — prerender all pages including dynamic `docs/[...slug]` routes from `specs/*.md`
+3. Output: `website/build/` — fully static HTML + protocol artifacts at `/v1/`
+
+### Markdown Link Rewriting
+
+The `+page.server.ts` for `docs/[...slug]` rewrites relative links in rendered markdown:
+- `../../protocol/v1/schemas/...` → `/v1/schemas/...` (protocol artifacts)
+- `../agents/events.md` → `/docs/agents/events` (other spec pages)
+
+SvelteKit's `handleHttpError` in `svelte.config.js` ignores prerender 404s for `/v1/` paths (static files, not routes).
+
+### Deployment
+
+- **Docker image**: `ghcr.io/openagentprotocol/spec:<commit-sha>` (never use `latest`)
+- **Dockerfile**: multi-stage — Node 20 build → nginx 1.27-alpine serve
+- **WORKDIR**: `/repo/website` (mirrors real repo layout so script paths resolve correctly)
+- **Health endpoint**: `/healthz` (nginx returns 200, no page load — use for K8s probes)
+- **Port**: 3000 (container + K8s service + probes)
+
+### CI/CD (GitHub Actions)
+
+4 jobs: `validate` → `build` → `docker-publish` → `update-iac`
+
+- Uses `GITHUB_TOKEN` for GHCR (requires `permissions: packages: write`)
+- IaC repo: `Amarcode-Studios/DotQuant.Iac` (cross-org, needs `IAC_PAT` secret)
+- Deployment path: configured via `IAC_DEPLOY_PATH` secret
+- `update-iac` job creates a PR to update image tag in the K8s deployment file
+
+### Required GitHub Secrets
+
+| Secret | Purpose |
+|---|---|
+| `IAC_REPO` | IaC repository (org/repo) |
+| `IAC_PAT` | PAT with `contents:write` + `pull-requests:write` on IaC repo |
+| `IAC_BRANCH` | Target branch in IaC repo |
+| `IAC_DEPLOY_PATH` | Path to K8s deployment.yaml in IaC repo (forward slashes) |
+
+### Debugging
+
+The `.vscode/launch.json` is at the **repo root** (not `website/`). It launches the Vite dev server with `cwd` set to `website/` — press F5 from the repo root.
