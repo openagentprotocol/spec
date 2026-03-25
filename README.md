@@ -58,6 +58,20 @@ node scripts/validate-examples.mjs
 cd website && npm install && npm run dev
 ```
 
+## Cutting a Release
+
+Use the release script to tag and publish a new version:
+
+```bash
+# Pre-release (draft, not yet production-ready)
+./scripts/release.sh 0.2.0 --prerelease
+
+# Stable release (also creates the oap@stable pointer tag)
+./scripts/release.sh 1.0.0
+```
+
+The script will validate your working tree, create an annotated tag, push it, and create a GitHub Release (if `gh` CLI is installed). For stable releases it also updates the `oap@stable` tag.
+
 ## Community
 
 - [Website & Documentation](https://openagentprotocol.io/)
