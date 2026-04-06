@@ -110,6 +110,23 @@ function processHeadings(html: string): { html: string; headings: TocHeading[] }
 	return { html: processed, headings };
 }
 
+/** Classify blockquotes as tip/warning based on the first bold keyword. */
+function classifyBlockquotes(html: string): string {
+	return html.replace(/<blockquote>([\s\S]*?)<\/blockquote>/g, (_match, inner) => {
+		const firstStrong = inner.match(/<strong>([\s\S]*?)<\/strong>/);
+		if (firstStrong) {
+			const keyword = firstStrong[1].replace(/<[^>]+>/g, '').trim().toLowerCase();
+			if (keyword.startsWith('tip') || keyword.startsWith('note')) {
+				return `<blockquote class="tip">${inner}</blockquote>`;
+			}
+			if (keyword.startsWith('warning') || keyword.startsWith('caution')) {
+				return `<blockquote class="warning">${inner}</blockquote>`;
+			}
+		}
+		return `<blockquote>${inner}</blockquote>`;
+	});
+}
+
 /** Build breadcrumb segments from a slug like "agents/registry". */
 function buildBreadcrumb(slug: string): { label: string }[] {
 	const sectionLabels: Record<string, string> = {
@@ -139,6 +156,7 @@ export async function load({ params }) {
 	const { marked } = await import('marked');
 	let html = await marked(markdown);
 	html = rewriteLinks(html, slug);
+	html = classifyBlockquotes(html);
 	const { html: processedHtml, headings } = processHeadings(html);
 
 	// Extract title from first # heading

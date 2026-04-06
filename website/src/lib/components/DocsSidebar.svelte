@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
+	let {
+		open = false
+	}: { open?: boolean } = $props();
+
 	const nav = [
 		{
 			label: 'Getting Started',
@@ -37,6 +41,10 @@
 				{ label: 'Versioning', href: '/docs/versioning' },
 				{ label: 'Conformance', href: '/docs/conformance' }
 			]
+		},
+		{
+			label: 'Comparisons',
+			items: [{ label: 'OAP vs UCP', href: '/docs/comparisons/ucp' }]
 		}
 	];
 
@@ -45,7 +53,7 @@
 	}
 </script>
 
-<nav class="sidebar">
+<nav class="sidebar" class:open>
 	<div class="sidebar-inner">
 		<a href="/docs" class="sidebar-home" class:active={page.url.pathname === '/docs'}>
 			All Docs
@@ -110,7 +118,7 @@
 
 	.sidebar-home:hover {
 		color: var(--color-text);
-		background: rgba(255, 255, 255, 0.04);
+		background: rgba(0, 0, 0, 0.04);
 	}
 
 	.sidebar-home.active {
@@ -151,12 +159,31 @@
 
 	.nav-item:hover {
 		color: var(--color-text);
-		background: rgba(255, 255, 255, 0.04);
+		background: rgba(0, 0, 0, 0.04);
 	}
 
 	.nav-item.active {
-		color: var(--color-accent-hover);
-		background: rgba(99, 102, 241, 0.1);
+		color: var(--color-accent);
+		background: rgba(79, 70, 229, 0.08);
 		font-weight: 500;
+	}
+
+	/* Mobile: hidden by default, slides in when open */
+	@media (max-width: 767px) {
+		.sidebar {
+			position: fixed;
+			top: var(--nav-height);
+			left: 0;
+			bottom: 0;
+			z-index: 100;
+			transform: translateX(-100%);
+			transition: transform 0.25s ease;
+			box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+			width: 280px;
+		}
+
+		.sidebar.open {
+			transform: translateX(0);
+		}
 	}
 </style>

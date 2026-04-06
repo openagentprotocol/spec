@@ -97,6 +97,59 @@ Layer 1: Transport
 
 OAP uses date-based versioning: `"2025-07-01"`. Consumers should ignore unknown fields (forward compatibility). Multiple versions can coexist in a manifest.
 
+## Quick Start for Implementers
+
+Getting a minimal OAP endpoint running takes three steps.
+
+**Step 1 — Serve `/.well-known/oap`**
+
+Return a JSON manifest describing your agent:
+
+```json
+GET /.well-known/oap
+{
+  "oap": {
+    "version": "2025-07-01",
+    "services": {
+      "io.oap.agents": {
+        "version": "2025-07-01",
+        "rest": {
+          "schema": "https://openagentprotocol.io/v1/services/agents/openapi.json",
+          "endpoint": "https://your-service.example.com/"
+        }
+      }
+    },
+    "capabilities": [
+      { "name": "io.oap.agents.registry", "version": "2025-07-01" },
+      { "name": "io.oap.agents.events",   "version": "2025-07-01" },
+      { "name": "io.oap.agents.commands", "version": "2025-07-01" }
+    ]
+  }
+}
+```
+
+**Step 2 — Implement the REST endpoints**
+
+The minimum set for a functional agent service:
+
+| Method | Path | What it does |
+|---|---|---|
+| `POST` | `/agents` | Register an agent |
+| `GET` | `/agents` | List registered agents |
+| `POST` | `/events` | Deliver an event to an agent |
+| `GET` | `/commands` | Poll produced commands |
+
+**Step 3 — Validate**
+
+Run the validation scripts to confirm your endpoint is spec-compliant:
+
+```
+node scripts/validate-schemas.mjs
+node scripts/validate-examples.mjs
+```
+
+> **Tip:** Start with `authentication.type = "none"` while developing. Add bearer or API key auth once the endpoint is working.
+
 ## Next Steps
 
 - [Discovery](./discovery.md) — How agents are discovered

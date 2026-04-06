@@ -57,6 +57,12 @@
 		padding: 2.5rem 3rem 4rem;
 	}
 
+	@media (max-width: 767px) {
+		.page-content {
+			padding: 1.75rem 1.25rem 3rem;
+		}
+	}
+
 	/* Breadcrumb */
 	.breadcrumb {
 		display: flex;

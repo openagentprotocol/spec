@@ -1,14 +1,14 @@
 @import 'tailwindcss';
 
 :root {
-	--color-bg: #0a0a0f;
-	--color-bg-secondary: #12121a;
-	--color-bg-card: #16161f;
-	--color-border: #2a2a3a;
-	--color-text: #d4d4e8;
-	--color-text-muted: #7070a0;
-	--color-accent: #6366f1;
-	--color-accent-hover: #818cf8;
+	--color-bg: #0a0e1a;
+	--color-bg-secondary: #060912;
+	--color-bg-card: #111827;
+	--color-border: rgba(255, 255, 255, 0.08);
+	--color-text: #e2e8f0;
+	--color-text-muted: #94a3b8;
+	--color-accent: #3b82f6;
+	--color-accent-hover: #60a5fa;
 	--nav-height: 64px;
 }
 
@@ -34,7 +34,7 @@ body {
 	font-size: 1.875rem;
 	font-weight: 700;
 	letter-spacing: -0.02em;
-	color: #f0f0ff;
+	color: #111827;
 	margin-top: 0;
 	margin-bottom: 0.25rem;
 	padding-bottom: 1rem;
@@ -45,7 +45,7 @@ body {
 .docs-content h2 {
 	font-size: 1.25rem;
 	font-weight: 600;
-	color: #eaeaff;
+	color: #1e2035;
 	margin-top: 2.75rem;
 	margin-bottom: 0.75rem;
 	padding-bottom: 0.5rem;
@@ -56,7 +56,7 @@ body {
 .docs-content h3 {
 	font-size: 1.0625rem;
 	font-weight: 600;
-	color: #e0e0f8;
+	color: #1e2035;
 	margin-top: 2rem;
 	margin-bottom: 0.5rem;
 	scroll-margin-top: calc(var(--nav-height) + 1.5rem);
@@ -65,7 +65,7 @@ body {
 .docs-content h4 {
 	font-size: 0.9375rem;
 	font-weight: 600;
-	color: #d8d8f0;
+	color: #374151;
 	margin-top: 1.5rem;
 	margin-bottom: 0.375rem;
 	scroll-margin-top: calc(var(--nav-height) + 1.5rem);
@@ -90,7 +90,7 @@ body {
 
 .docs-content strong {
 	font-weight: 600;
-	color: #f0f0ff;
+	color: #111827;
 }
 
 .docs-content em {
@@ -100,11 +100,11 @@ body {
 .docs-content code {
 	font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 	font-size: 0.8125em;
-	background: rgba(99, 102, 241, 0.08);
-	color: #c4b5fd;
+	background: rgba(79, 70, 229, 0.06);
+	color: #4338ca;
 	padding: 0.15em 0.45em;
 	border-radius: 4px;
-	border: 1px solid rgba(99, 102, 241, 0.18);
+	border: 1px solid rgba(79, 70, 229, 0.18);
 }
 
 .docs-content pre {
@@ -120,7 +120,7 @@ body {
 	background: none;
 	border: none;
 	padding: 0;
-	color: #e2e8f0;
+	color: var(--color-text);
 	font-size: 0.8125rem;
 	line-height: 1.65;
 }
@@ -151,19 +151,66 @@ body {
 
 .docs-content blockquote {
 	border-left: 3px solid var(--color-accent);
-	padding: 0.85rem 1.25rem;
+	padding: 0.85rem 1.125rem 0.85rem 1.375rem;
 	margin: 1.5rem 0;
-	background: rgba(99, 102, 241, 0.06);
-	border-radius: 0 6px 6px 0;
+	background: rgba(79, 70, 229, 0.05);
+	border-radius: 0 8px 8px 0;
+	position: relative;
+}
+
+/* Info/note callout (default) — triggered by > **Note:** or plain blockquote */
+.docs-content blockquote::before {
+	content: 'ℹ';
+	position: absolute;
+	left: -1px;
+	top: 0.8rem;
+	transform: translateX(-50%);
+	width: 20px;
+	height: 20px;
+	background: var(--color-accent);
+	color: #fff;
+	border-radius: 50%;
+	font-size: 0.625rem;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-style: normal;
 }
 
 .docs-content blockquote p {
 	margin: 0;
 	color: var(--color-text);
+	font-size: 0.9rem;
 }
 
 .docs-content blockquote p + p {
 	margin-top: 0.5rem;
+}
+
+/* Warning callout — any blockquote whose first strong starts with "Warning" */
+.docs-content blockquote:has(p > strong:first-child:is([data-type='warning'], :-webkit-any(strong))) {
+	/* Fallback handled via class in page server if needed */
+}
+
+.docs-content blockquote.tip {
+	border-left-color: #059669;
+	background: rgba(5, 150, 105, 0.05);
+}
+
+.docs-content blockquote.tip::before {
+	content: '✓';
+	background: #059669;
+}
+
+.docs-content blockquote.warning {
+	border-left-color: #d97706;
+	background: rgba(217, 119, 6, 0.05);
+}
+
+.docs-content blockquote.warning::before {
+	content: '!';
+	background: #d97706;
 }
 
 .docs-content hr {
@@ -191,7 +238,7 @@ body {
 	text-align: left;
 	padding: 0.55rem 1rem;
 	font-weight: 600;
-	color: #eaeaff;
+	color: #1e2035;
 	border: 1px solid var(--color-border);
 	font-size: 0.75rem;
 	text-transform: uppercase;
