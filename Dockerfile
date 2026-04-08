@@ -8,6 +8,12 @@ COPY specs/ /repo/specs/
 COPY protocol/ /repo/protocol/
 COPY website/ /repo/website/
 
+# Build-time variables for the version footer
+ARG VITE_GIT_SHA
+ARG VITE_BUILD_TIME
+ENV VITE_GIT_SHA=$VITE_GIT_SHA
+ENV VITE_BUILD_TIME=$VITE_BUILD_TIME
+
 # Install dependencies and build
 RUN npm ci
 RUN node scripts/copy-protocol.mjs
