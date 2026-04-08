@@ -1020,6 +1020,23 @@ OAP is NOT:
 
 ---
 
+## Spec Changelog (implementation-relevant decisions)
+
+**2026-04-08**
+
+- `rest.schema` renamed to `rest.openapi` throughout — the field in the `rest` transport block of a service is now `openapi`, not `schema`. The `schema` field still exists on **capability** objects (pointing to a JSON Schema file) — these are different fields. Do not confuse them.
+- Capability `status` field now supports `"partial"` in addition to `"active"` and `"planned"`. Use `"partial"` when a backing service exists but does not cover all required endpoints for a capability. A capability declared `"active"` must implement all required endpoints.
+- `rest.endpoint` must always be the **consumer-facing public URL** — never an internal backend or private service-mesh address. If a backend URL already exists in a codebase, verify it is also the consumer-facing address before using it as `rest.endpoint`.
+- `rest.openapi` must describe only the **consumer-facing API surface** — internal backend paths must not appear in the spec consumers read.
+- Multiple transports (`rest`, `mcp`, `a2a`) on a service expose the **same capability surface** — they are alternative access methods, not separate operation sets.
+- Multi-tenant SaaS pattern: prefix all tenant-scoped paths with `{tenantId}` (e.g. `/{tenantId}/agents`). `rest.endpoint` stays as the root consumer URL. The `{tenantId}` path parameter is declared in `rest.openapi`. Bearer auth identifies the caller; `{tenantId}` identifies the tenant.
+- Events capability: implementers may map domain-specific records (signals, logs, trade history) to the OAP event shape at query time. `POST /events` can be declared `"partial"` if no live event store exists.
+- `well-known-uap.json` example was an orphaned leftover from an earlier "UAP" working name — it has been deleted.
+- The website build injects `VITE_GIT_SHA` and `VITE_BUILD_TIME` via Docker build args (set in `cicd.yaml` `docker-publish` step). These are not repo secrets — they come from `github.sha` and `github.event.head_commit.timestamp`. The docs layout footer displays the short SHA (linked to the GitHub commit) and UTC timestamp so readers can verify which version is deployed.
+- The website is built **inside Docker** (`Dockerfile`) not in the CI `build` job — env vars must be passed as `--build-arg` to `docker build`, which the Dockerfile then exposes as `ENV` before running `npm run build`.
+
+---
+
 ## Repository Structure & Website Build
 
 ### Directory Layout
