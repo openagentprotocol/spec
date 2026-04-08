@@ -114,7 +114,7 @@ GET /.well-known/oap
       "io.oap.agents": {
         "version": "2025-07-01",
         "rest": {
-          "schema": "https://openagentprotocol.io/v1/services/agents/openapi.json",
+          "openapi": "https://openagentprotocol.io/v1/services/agents/openapi.json",
           "endpoint": "https://your-service.example.com/"
         }
       }

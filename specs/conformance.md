@@ -29,6 +29,12 @@ For each capability an endpoint claims to support:
 
 > **Path resolution:** All paths above are relative to the `rest.endpoint` base URL declared in the discovery manifest. For example, if `rest.endpoint` is `https://app.example.com/oap/`, then `GET /agents` resolves to `https://app.example.com/oap/agents`. The paths are never relative to the domain root unless `rest.endpoint` itself is the domain root.
 
+### Partial Capabilities
+
+A capability declared with `status: "partial"` is exempt from the full endpoint requirements above. Consumers **must not** assume that all required endpoints for a `partial` capability exist. Implementers **must** document which endpoints are available in the `rest.openapi` spec.
+
+A capability declared with `status: "active"` (or with no `status` field) **must** implement all required endpoints in the table above. Declaring a capability `active` while returning `404` or `501` on required routes is a conformance violation.
+
 ## Required HTTP Status Codes
 
 All OAP REST endpoints must use standard HTTP status codes. The following are required:

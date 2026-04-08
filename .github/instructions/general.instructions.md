@@ -356,7 +356,7 @@ This returns a JSON manifest describing the available agents, services, capabili
         "description": "Agent management, event delivery, command observation",
         "spec": "https://openagentprotocol.io/specs/agents",
         "rest": {
-          "schema": "https://openagentprotocol.io/services/agents/openapi.json",
+          "openapi": "https://openagentprotocol.io/services/agents/openapi.json",
           "endpoint": "http://localhost:5100/"
         },
         "mcp": {
@@ -369,7 +369,7 @@ This returns a JSON manifest describing the available agents, services, capabili
         "description": "Execution traces and audit trail",
         "spec": "https://openagentprotocol.io/specs/observability",
         "rest": {
-          "schema": "https://openagentprotocol.io/services/observability/openapi.json",
+          "openapi": "https://openagentprotocol.io/services/observability/openapi.json",
           "endpoint": "http://localhost:5100/"
         }
       }
@@ -533,7 +533,7 @@ Each service declares how it can be reached. A consumer chooses the transport th
 
 ```json
 "rest": {
-  "schema": "https://openagentprotocol.io/services/agents/openapi.json",
+  "openapi": "https://openagentprotocol.io/services/agents/openapi.json",
   "endpoint": "http://localhost:5100/"
 },
 "mcp": {
@@ -554,7 +554,11 @@ Each service declares how it can be reached. A consumer chooses the transport th
 
 ### REST — The Web UI Transport
 
-REST is the primary transport for **web-based consumers** including the OAP web UI. The full REST API is defined by the OpenAPI schema referenced in each service's `rest.schema` URL.
+REST is the primary transport for **web-based consumers** including the OAP web UI. The full REST API is defined by the OpenAPI spec referenced in each service's `rest.openapi` URL.
+
+> **`rest.endpoint` is always the consumer-facing address** — never an internal backend or private service URL. `rest.openapi` describes only the consumer-facing operation surface; internal backend paths must not appear in the spec consumers read.
+
+> **Multiple transports, one surface.** When a service declares both `rest` and `mcp` (or `a2a`), all transports expose the same logical capabilities. They are alternative access methods, not separate operation sets.
 
 ### MCP — The LLM Transport
 

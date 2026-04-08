@@ -98,6 +98,18 @@ Capabilities are composable building blocks within a service.
 | `io.oap.agents.memory` | View agent memory state | `agents.registry` |
 | `io.oap.observability.tracing` | Execution traces | — |
 
+### Capability Status
+
+Each capability in the manifest may declare a `status` field:
+
+| `status` | Meaning | Consumer behaviour |
+|---|---|---|
+| `"active"` (or omitted) | Fully implemented | All required endpoints exist and are callable |
+| `"partial"` | Subset implemented | Some required endpoints may be missing or stubbed — consumers must not assume full coverage |
+| `"planned"` | Not yet implemented | No endpoints exist; declared for discovery purposes only |
+
+Implementers should use `"partial"` when a backing service exists but does not yet cover all required endpoints for a capability, rather than declaring a capability `active` and returning `404` or `501` on some routes.
+
 An OAP endpoint **selectively exposes** only the capabilities it supports. Consumers discover what's available by reading the manifest.
 
 ### Custom and Domain-Specific Capabilities
@@ -131,7 +143,7 @@ Each service declares how it can be reached:
 
 ```json
 "rest": {
-  "schema": "https://openagentprotocol.io/v1/services/agents/openapi.json",
+  "openapi": "https://openagentprotocol.io/v1/services/agents/openapi.json",
   "endpoint": "http://localhost:5100/"
 },
 "mcp": {
@@ -150,7 +162,13 @@ Each service declares how it can be reached:
 | **A2A** | Other agents (Google Agent-to-Agent protocol) | HTTP/JSON |
 | **gRPC** | Internal native runtime (optional) | Protocol Buffers |
 
-The `rest.endpoint` value is the **base URL**. All REST API paths are appended to it. For example, if `rest.endpoint` is `https://app.agenthost.example/`, then the agents registry is at `https://app.agenthost.example/agents`.
+The `rest.endpoint` value is the **consumer-facing base URL**. All REST API paths are appended to it. For example, if `rest.endpoint` is `https://app.agenthost.example/`, then the agents registry is at `https://app.agenthost.example/agents`.
+
+> **`rest.endpoint` is always the consumer-facing address** — never an internal backend or private service URL. If the implementer sits behind a proxy or API gateway, `rest.endpoint` is the outermost address consumers hit.
+
+> **`rest.openapi` describes the consumer surface only.** All paths in the referenced OpenAPI spec are relative to `rest.endpoint` and must describe only the endpoints accessible at that public address. Internal or backend-private paths must not appear in the spec consumers read.
+
+> **Multiple transports describe the same capability surface.** When both `rest` and `mcp` (or `a2a`) are declared, they each provide access to the same logical capabilities — they are alternative access methods, not separate operation sets. Consumers choose one transport; they do not infer separate capabilities from the presence of multiple transports.
 
 ## Schema
 

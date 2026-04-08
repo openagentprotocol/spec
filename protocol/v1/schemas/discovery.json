@@ -115,25 +115,25 @@
         },
         "status": {
           "type": "string",
-          "enum": ["active", "planned"],
-          "description": "Capability availability status. Omitted means active."
+          "enum": ["active", "partial", "planned"],
+          "description": "Capability availability status. 'active' means fully implemented. 'partial' means a subset of the capability's endpoints or features are implemented — consumers must not assume all required endpoints exist. 'planned' means not yet implemented. Omitted means active."
         }
       },
       "additionalProperties": false
     },
     "restTransport": {
       "type": "object",
-      "required": ["schema", "endpoint"],
+      "required": ["openapi", "endpoint"],
       "properties": {
-        "schema": {
+        "openapi": {
           "type": "string",
           "format": "uri",
-          "description": "URL to the OpenAPI spec (JSON)."
+          "description": "URL to the implementer's OpenAPI spec (JSON) describing their consumer-facing API surface. All paths in this spec are relative to rest.endpoint and must describe only endpoints reachable at that URL — never internal or backend-private paths."
         },
         "endpoint": {
           "type": "string",
           "format": "uri",
-          "description": "Base REST endpoint URL."
+          "description": "Consumer-facing base URL for all REST operations. This must be the public or proxy-facing address reachable by consumers — never an internal backend address. All paths from the OpenAPI spec are appended to this URL."
         }
       },
       "additionalProperties": false

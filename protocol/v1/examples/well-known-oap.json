@@ -14,7 +14,7 @@
         "description": "Agent management, event delivery, command observation",
         "spec": "https://openagentprotocol.io/specs/agents",
         "rest": {
-          "schema": "https://openagentprotocol.io/v1/services/agents/openapi.json",
+          "openapi": "https://openagentprotocol.io/v1/services/agents/openapi.json",
           "endpoint": "http://localhost:5100/"
         },
         "mcp": {
@@ -27,7 +27,7 @@
         "description": "Execution traces and audit trail",
         "spec": "https://openagentprotocol.io/specs/observability",
         "rest": {
-          "schema": "https://openagentprotocol.io/v1/services/observability/openapi.json",
+          "openapi": "https://openagentprotocol.io/v1/services/observability/openapi.json",
           "endpoint": "http://localhost:5100/"
         }
       }
