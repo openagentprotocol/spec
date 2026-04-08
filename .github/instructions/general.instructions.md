@@ -340,8 +340,8 @@ This returns a JSON manifest describing the available agents, services, capabili
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `version` | string | yes | OAP spec version (date-based: `"YYYY-MM-DD"`) |
-| `services` | object | yes | Service definitions with transport bindings |
-| `capabilities` | array | yes | Supported capabilities with schema URLs |
+| `services` | object | yes | Service definitions with transport bindings. Each service has a `rest` block with two fields: `rest.openapi` (URL to the implementer's OpenAPI spec) and `rest.endpoint` (consumer-facing base URL). |
+| `capabilities` | array | yes | Supported capabilities. Each capability has a `schema` field pointing to a **JSON Schema** file for that capability's data structures. Note: `capability.schema` is a JSON Schema, not an OpenAPI spec. It is a different field from `rest.openapi`. |
 | `agents` | array | no | Currently registered agents |
 
 ### Full Manifest Example
@@ -583,6 +583,10 @@ Agents can expose themselves as **A2A agents** (Google Agent-to-Agent protocol) 
 ## REST API Surface
 
 This section defines the HTTP API that a **web UI** or any REST consumer uses to interact with an OAP endpoint. All endpoints return `application/json`.
+
+> **`rest.endpoint` is the consumer-facing base URL** for all paths below. It must be a public address reachable by external consumers — never an internal backend URL or private service-mesh address. If a backend URL already exists in your codebase, verify it is also the consumer-facing address before using it as `rest.endpoint`.
+
+> **Multi-tenant routing:** For SaaS platforms serving multiple tenants, prefix all tenant-scoped paths with `{tenantId}` (e.g. `/{tenantId}/agents`, `/{tenantId}/events`). Set `rest.endpoint` to the root consumer URL without a tenant segment. The `{tenantId}` path parameter must be declared in `rest.openapi`. Authentication (a Bearer API key) identifies the caller; `{tenantId}` identifies which tenant to target.
 
 ### Discovery
 
