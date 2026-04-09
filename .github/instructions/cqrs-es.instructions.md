@@ -220,87 +220,55 @@ The `agents` array in `/.well-known/oap` becomes `services`. The service descrip
 
 ---
 
-## 8. Full File Change Inventory
+## 8. Completed Changes
 
-Work in this order. Each phase is self-contained and can be verified before moving to the next.
+All phases below have been implemented. This section serves as a record of what was changed.
 
 ### Phase 1 — Schemas (`protocol/v1/schemas/`)
 
-1. **`agents/registry.json`**
-   - Rename `agentDescriptor` → `serviceDescriptor`
-   - Rename `agentRegistration` → `serviceRegistration`
-   - Rename `agentList` → `serviceList`
-   - Update `accepts` description: "Command types this service ingests"
-   - Update `produces` description: "Event types this service publishes"
-
-2. **`agents/commands.json`**
-   - Replace `command` def: CloudEvent shape (specversion, id, source, type, datacontenttype, dataschema, time, data)
-   - Replace `commandList` def with `commandCatalogue`: array of `{ type, dataschema, description }`
-   - Add `commandIngestion` def: CloudEvent shape for POST /commands request body (same as command)
-
-3. **`agents/events.json`**
-   - Replace `event` def: CloudEvent shape
-   - Update `eventList` accordingly
+1. **`agents/registry.json`** — renamed `agentDescriptor/agentRegistration/agentList` → `serviceDescriptor/serviceRegistration/serviceList`; `accepts` = commands ingested, `produces` = events published
+2. **`agents/commands.json`** — replaced custom shape with CloudEvent 1.0; replaced `commandList` with `commandCatalogue` (entries: `{type, dataschema, description}`)
+3. **`agents/events.json`** — replaced custom shape with CloudEvent 1.0
+4. **`observability/tracing.json`** — `agentId/inputEvent/outputCommands` → `serviceId/inputCommand/outputEvents`
 
 ### Phase 2 — OpenAPI (`protocol/v1/services/agents/openapi.json`)
 
-4. **Rename all `/agents` paths to `/services`**
-5. **Add `POST /commands`** with CloudEvent request body, 201/400/401 responses
-6. **Redefine `GET /commands`**: response references `commandCatalogue` not `commandList`; update description to "List available command types and their schema URIs"
-7. **Update `GET /events`**: clarify it returns domain events published by the service
-8. **Update `POST /events`**: mark as optional simulation/testing capability
-9. **Update all tags**: "Agent Registry" → "Service Registry", "Agent Lifecycle" → "Service Lifecycle", "Command Log" → "Command Catalogue", etc.
-10. **Update all `$ref`** paths that referenced registry `agentDescriptor`/`agentList` to the new names
+5. All `/agents` paths renamed to `/services`
+6. Added `POST /commands` (CloudEvent ingestion, 201)
+7. `GET /commands` redefined as command catalogue
+8. `POST /events` marked as optional simulation endpoint
+9. All tags updated ("Agent Registry" → "Service Registry", etc.)
 
 ### Phase 3 — Examples (`protocol/v1/examples/`)
 
-11. **`command.json`** — rewrite as CloudEvent shape
-12. **`event.json`** — rewrite as CloudEvent shape
-13. **`agent-descriptor.json`** — rename file to `service-descriptor.json`, update fields (accepts = commands, produces = events)
-14. **`well-known-oap.json`** — rename `agents` array → `services`, update service descriptor fields
+10. `agent-descriptor.json` renamed → `service-descriptor.json`
+11. `command.json`, `event.json`, `execution-trace.json` rewritten to CloudEvent format
+12. `well-known-oap.json` — `agents` array → `services`, descriptor fields corrected
 
 ### Phase 4 — Spec docs (`specs/`)
 
-15. **`agents/registry.md`** — "Agent" → "Service" throughout; invert accepts/produces descriptions and examples
-16. **`agents/commands.md`** — full rewrite: CloudEvent wire format, GET /commands = catalogue, POST /commands = ingestion with validation, schema authority
-17. **`agents/events.md`** — CloudEvent wire format; clarify events are published output, POST /events is simulation only
-18. **`agents/lifecycle.md`** — "agent" → "service" throughout
-19. **`agents/memory.md`** — "agent" → "service" throughout
-20. **`overview.md`** — rewrite core primitives table; update "Who is OAP for" examples (swap accepts/produces column content)
-21. **`discovery.md`** — update manifest example to use `services` array with corrected descriptor
-22. **`conformance.md`** — update any references to agent/event/command directions
-23. **`transports/rest.md`** — update endpoint table, add POST /commands
+13. `agents/registry.md`, `agents/commands.md`, `agents/events.md`, `agents/lifecycle.md`, `agents/memory.md` — all updated
+14. `overview.md`, `discovery.md`, `conformance.md`, `observability/tracing.md` — updated
 
-### Phase 5 — General instructions (`general.instructions.md`)
+### Phase 5 — Instructions (`general.instructions.md`)
 
-24. Update the core primitives definitions (Event, Command, Agent Descriptor, Execution Trace)
-25. Update the "Agent Descriptor" table and examples to `serviceDescriptor` direction
-26. Update all command/event shape examples to CloudEvent format
-27. Update the "Who is OAP For" table — swap the Accepts/Produces column values
+15. Purpose statement, primitives, REST API surface, examples — all updated to corrected terminology and CloudEvent shapes
 
 ### Phase 6 — Website (`website/src/`)
 
-28. **`routes/+page.svelte`** — update the homepage manifest code block (`agents` → `services`, swap accepts/produces); update FeatureCard for "Command Log" → "Command Catalogue"
-29. **`lib/components/DocsSidebar.svelte`** — update nav label "Agents" section if routes change; may need "Services" label
-30. **`lib/components/Hero.svelte`** — check for any hardcoded agent/event/command copy
-31. Any other Svelte components with hardcoded OAP copy
+16. Hero subtitle, feature cards, manifest code block, audience copy — updated
 
-### Phase 7 — Validation scripts and Docker
+### Phase 7 — README
 
-32. **`scripts/validate-examples.mjs`** — check if example filenames are referenced; update `agent-descriptor.json` → `service-descriptor.json`
-33. **`scripts/validate-schemas.mjs`** — check for any hardcoded schema def names that changed
-34. **`Dockerfile`** — unlikely to need changes but verify
+17. Opening paragraphs updated
 
 ---
 
 ## 9. What Does NOT Change
 
 - The capability names (`io.oap.agents.*`) — these are protocol namespaces, changing them is a breaking version change
-- The URL paths `/agents/*` in the REST API remain `/agents/*` for registry/lifecycle endpoints — the service descriptor resource is still accessed via `/agents` for backward compatibility; only the terminology in documentation and schemas changes
-- Execution Trace shape — direction of tracing is correct (records what event went in, what commands came out — in the new model: what command went in, what events came out... actually this DOES need to be reviewed in Phase 4)
+- The URL paths for registry/lifecycle endpoints are now `/services/*` — this was changed as part of this refactor
 - Transport bindings (MCP, A2A) — structure unchanged
-
-> **NOTE on Execution Trace**: The trace currently records `inputEvent` and `outputCommands`. After this refactor the correct shape is `inputCommand` and `outputEvents`. This must be revisited in Phase 4 when editing `specs/observability/tracing.md` and `protocol/v1/schemas/observability/tracing.json`.
 
 ---
 

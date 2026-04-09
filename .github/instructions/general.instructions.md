@@ -616,7 +616,7 @@ This section defines the HTTP API that a **web UI** or any REST consumer uses to
 
 > **`rest.endpoint` is the consumer-facing base URL** for all paths below. It must be a public address reachable by external consumers — never an internal backend URL or private service-mesh address. If a backend URL already exists in your codebase, verify it is also the consumer-facing address before using it as `rest.endpoint`.
 
-> **Multi-tenant routing:** For SaaS platforms serving multiple tenants, prefix all tenant-scoped paths with `{tenantId}` (e.g. `/{tenantId}/agents`, `/{tenantId}/events`). Set `rest.endpoint` to the root consumer URL without a tenant segment. The `{tenantId}` path parameter must be declared in `rest.openapi`. Authentication (a Bearer API key) identifies the caller; `{tenantId}` identifies which tenant to target.
+> **Multi-tenant routing:** For SaaS platforms serving multiple tenants, prefix all tenant-scoped paths with `{tenantId}` (e.g. `/{tenantId}/services`, `/{tenantId}/commands`). Set `rest.endpoint` to the root consumer URL without a tenant segment. The `{tenantId}` path parameter must be declared in `rest.openapi`. Authentication (a Bearer API key) identifies the caller; `{tenantId}` identifies which tenant to target.
 
 ### Discovery
 
@@ -624,90 +624,124 @@ This section defines the HTTP API that a **web UI** or any REST consumer uses to
 |---|---|---|---|
 | GET | `/.well-known/oap` | Discovery manifest | — (always available) |
 
-### Agent Registry (`io.oap.agents.registry`)
+### Service Registry (`io.oap.agents.registry`)
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/agents` | List all registered agents |
-| GET | `/agents/{id}` | Get agent detail |
-| POST | `/agents` | Register a new agent |
-| DELETE | `/agents/{id}` | Remove an agent |
+| GET | `/services` | List all registered services |
+| GET | `/services/{id}` | Get service detail |
+| POST | `/services` | Register a new service |
+| DELETE | `/services/{id}` | Remove a service |
 
-#### GET /agents — List agents
+#### GET /services — List services
 
 Response:
 
 ```json
 {
-  "agents": [
+  "services": [
     {
       "id": "negotiation",
       "name": "Contract Negotiation",
-      "description": "Evaluates contract proposals and produces counter-offers",
-      "type": "negotiator",
-      "accepts": ["ContractProposed", "CounterOfferReceived"],
-      "produces": ["ProposeCounter", "AcceptContract"],
+      "description": "Ingests negotiation commands and publishes negotiation events",
+      "type": "negotiation-service",
+      "accepts": ["ProposeCounter", "AcceptContract"],
+      "produces": ["CounterProposed", "ContractAccepted"],
       "status": "running"
     }
   ]
 }
 ```
 
-#### GET /agents/{id} — Agent detail
+#### GET /services/{id} — Service detail
 
-Response: a single agent descriptor object.
+Response: a single service descriptor object.
 
-#### POST /agents — Register agent
+#### POST /services — Register service
 
-Request body: an agent descriptor (without `status` — defaults to `"stopped"`).
+Request body: a service descriptor (without `status` — defaults to `"stopped"`).
 
-Response: `201 Created` with the created agent descriptor.
+Response: `201 Created` with the created service descriptor.
 
-#### DELETE /agents/{id} — Remove agent
-
-Response: `204 No Content` on success.
-
-### Agent Lifecycle (`io.oap.agents.lifecycle`)
-
-| Method | Path | Description |
-|---|---|---|
-| POST | `/agents/{id}/pause` | Pause a running agent |
-| POST | `/agents/{id}/resume` | Resume a paused agent |
+#### DELETE /services/{id} — Remove service
 
 Response: `204 No Content` on success.
 
-### Event Delivery (`io.oap.agents.events`)
+### Service Lifecycle (`io.oap.agents.lifecycle`)
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/events` | Send an event to the runtime |
-| GET | `/events` | List recent events (with optional `?type=` filter) |
+| POST | `/services/{id}/pause` | Pause a running service |
+| POST | `/services/{id}/resume` | Resume a paused service |
 
-#### POST /events — Send event
+Response: `204 No Content` on success.
 
-Request body:
+### Events (`io.oap.agents.events`)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/events` | List domain events published by this service (optional `?type=` filter) |
+| POST | `/events` | Inject a domain event — for testing/simulation only (optional) |
+
+#### GET /events — List published events
+
+Response:
 
 ```json
 {
-  "type": "ContractProposed",
-  "data": { "salary": 95000, "startDate": "2025-09-01" },
-  "metadata": { "correlationId": "abc-123", "source": "hr-system" }
+  "events": [
+    {
+      "specversion": "1.0",
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "source": "https://api.example.com/negotiation",
+      "type": "CounterProposed",
+      "datacontenttype": "application/json",
+      "dataschema": "https://api.example.com/schemas/events/CounterProposed.json",
+      "time": "2025-07-01T10:30:01Z",
+      "data": { "salary": 100000, "contractId": "contract-42" }
+    }
+  ]
 }
 ```
 
-Response: `202 Accepted` — the runtime will route the event to matching agents asynchronously.
+#### POST /events — Inject event (optional)
 
-### Command Log (`io.oap.agents.commands`)
+Response: `202 Accepted`.
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/commands` | List recently produced commands (with optional `?type=` or `?agentId=` filter) |
-
-### Agent Memory (`io.oap.agents.memory`)
+### Commands (`io.oap.agents.commands`)
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/agents/{id}/memory` | Get current memory state for an agent |
+| GET | `/commands` | Command catalogue: list accepted command types and their schema URIs |
+| POST | `/commands` | Send a command (CloudEvent). Validates `data` against `dataschema`, queues, returns `201`. |
+
+#### GET /commands — Command catalogue
+
+Response:
+
+```json
+{
+  "commands": [
+    {
+      "type": "ProposeCounter",
+      "dataschema": "https://api.example.com/schemas/commands/ProposeCounter.json",
+      "description": "Propose a counter-offer in a contract negotiation"
+    }
+  ]
+}
+```
+
+#### POST /commands — Send command
+
+Request body: a CloudEvent (see Command wire format above).
+
+Response: `201 Created` — command accepted and queued.
+
+### Service Memory (`io.oap.agents.memory`)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/services/{id}/memory` | Get current memory state for a service |
 
 The memory response body is **opaque** — the protocol does not prescribe its structure. Different runtimes return different formats. A key-value runtime returns a JSON object. The web UI renders it as raw JSON.
 
@@ -715,10 +749,10 @@ The memory response body is **opaque** — the protocol does not prescribe its s
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/traces` | List recent execution traces (with optional `?agentId=` filter) |
+| GET | `/traces` | List recent execution traces (with optional `?serviceId=` filter) |
 | GET | `/traces/{traceId}` | Get a specific execution trace |
-| GET | `/agents/{id}/traces` | Convenience: list traces for a specific agent |
-| GET | `/agents/{id}/traces/latest` | Convenience: get the latest trace for an agent |
+| GET | `/services/{id}/traces` | Convenience: list traces for a specific service |
+| GET | `/services/{id}/traces/latest` | Convenience: get the latest trace for a service |
 
 #### GET /traces/{traceId} — Trace detail
 
@@ -733,8 +767,8 @@ All OAP REST endpoints use standard HTTP status codes with a consistent error bo
 ```json
 {
   "error": {
-    "code": "AGENT_NOT_FOUND",
-    "message": "Agent 'negotiation' is not registered",
+    "code": "SERVICE_NOT_FOUND",
+    "message": "Service 'negotiation' is not registered",
     "details": {}
   }
 }
@@ -743,12 +777,12 @@ All OAP REST endpoints use standard HTTP status codes with a consistent error bo
 | Status | When |
 |---|---|
 | 200 | Success with body |
-| 201 | Created (agent registration) |
-| 202 | Accepted (async processing, e.g. event delivery) |
+| 201 | Created (service registration, command accepted) |
+| 202 | Accepted (async processing, e.g. event injection) |
 | 204 | Success with no body (pause, resume, delete) |
 | 400 | Invalid request body (schema validation failure) |
-| 404 | Resource not found (agent, trace) |
-| 409 | Conflict (agent already registered) |
+| 404 | Resource not found (service, trace) |
+| 409 | Conflict (service already registered) |
 | 422 | Semantic error (capability not supported) |
 | 500 | Internal runtime error |
 
