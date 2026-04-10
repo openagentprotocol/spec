@@ -117,6 +117,30 @@
           "type": "string",
           "enum": ["active", "partial", "planned"],
           "description": "Capability availability status. 'active' means fully implemented. 'partial' means a subset of the capability's endpoints or features are implemented — consumers must not assume all required endpoints exist. 'planned' means not yet implemented. Omitted means active."
+        },
+        "endpoints": {
+          "type": "array",
+          "description": "Machine-readable list of HTTP endpoints exposed by this capability. Paths are relative to rest.endpoint. The HTTP method signals whether each operation is a read (GET) or a write (POST/PUT/PATCH/DELETE). Consumers can use this to discover the catalogue URL, determine mutability, and self-bootstrap without reading the spec.",
+          "items": {
+            "type": "object",
+            "required": ["method", "path"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+                "description": "HTTP method. GET is read-only. POST/PUT/PATCH/DELETE mutate state."
+              },
+              "path": {
+                "type": "string",
+                "description": "Path relative to rest.endpoint (e.g. /commands, /services/{id})."
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of this endpoint."
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false

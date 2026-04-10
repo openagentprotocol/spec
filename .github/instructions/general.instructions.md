@@ -410,7 +410,13 @@ This returns a JSON manifest describing the available services, capabilities, an
         "version": "2025-07-01",
         "description": "Register, remove, list agents",
         "spec": "https://openagentprotocol.io/specs/agents/registry",
-        "schema": "https://openagentprotocol.io/schemas/agents/registry.json"
+        "schema": "https://openagentprotocol.io/schemas/agents/registry.json",
+        "endpoints": [
+          { "method": "GET",    "path": "/services",     "description": "List all registered services" },
+          { "method": "POST",   "path": "/services",     "description": "Register a new service" },
+          { "method": "GET",    "path": "/services/{id}", "description": "Get service detail" },
+          { "method": "DELETE", "path": "/services/{id}", "description": "Remove a service" }
+        ]
       },
       {
         "name": "io.oap.agents.lifecycle",
@@ -418,21 +424,33 @@ This returns a JSON manifest describing the available services, capabilities, an
         "description": "Pause, resume agents",
         "spec": "https://openagentprotocol.io/specs/agents/lifecycle",
         "schema": "https://openagentprotocol.io/schemas/agents/lifecycle.json",
-        "extends": "io.oap.agents.registry"
+        "extends": "io.oap.agents.registry",
+        "endpoints": [
+          { "method": "POST", "path": "/services/{id}/pause",  "description": "Pause a service" },
+          { "method": "POST", "path": "/services/{id}/resume", "description": "Resume a service" }
+        ]
       },
       {
         "name": "io.oap.agents.events",
         "version": "2025-07-01",
         "description": "Send events to agents, list recent events",
         "spec": "https://openagentprotocol.io/specs/agents/events",
-        "schema": "https://openagentprotocol.io/schemas/agents/events.json"
+        "schema": "https://openagentprotocol.io/schemas/agents/events.json",
+        "endpoints": [
+          { "method": "GET",  "path": "/events", "description": "List domain events published by this service" },
+          { "method": "POST", "path": "/events", "description": "Inject a domain event (testing/simulation only)" }
+        ]
       },
       {
         "name": "io.oap.agents.commands",
         "version": "2025-07-01",
-        "description": "List commands produced by agents",
+        "description": "Discover command types this service accepts and send commands",
         "spec": "https://openagentprotocol.io/specs/agents/commands",
-        "schema": "https://openagentprotocol.io/schemas/agents/commands.json"
+        "schema": "https://openagentprotocol.io/schemas/agents/commands.json",
+        "endpoints": [
+          { "method": "GET",  "path": "/commands", "description": "Command catalogue — list accepted command types with schema URIs" },
+          { "method": "POST", "path": "/commands", "description": "Command ingestion — send a CloudEvent command" }
+        ]
       },
       {
         "name": "io.oap.agents.memory",
@@ -440,14 +458,21 @@ This returns a JSON manifest describing the available services, capabilities, an
         "description": "View agent memory state (opaque to the protocol)",
         "spec": "https://openagentprotocol.io/specs/agents/memory",
         "schema": "https://openagentprotocol.io/schemas/agents/memory.json",
-        "extends": "io.oap.agents.registry"
+        "extends": "io.oap.agents.registry",
+        "endpoints": [
+          { "method": "GET", "path": "/services/{id}/memory", "description": "View service memory state" }
+        ]
       },
       {
         "name": "io.oap.observability.tracing",
         "version": "2025-07-01",
         "description": "Execution traces — what happened when an agent processed an event",
         "spec": "https://openagentprotocol.io/specs/observability/tracing",
-        "schema": "https://openagentprotocol.io/schemas/observability/tracing.json"
+        "schema": "https://openagentprotocol.io/schemas/observability/tracing.json",
+        "endpoints": [
+          { "method": "GET", "path": "/traces",            "description": "List execution traces" },
+          { "method": "GET", "path": "/traces/{traceId}", "description": "Get a specific execution trace" }
+        ]
       }
     ],
     "agents": [
@@ -463,10 +488,10 @@ This returns a JSON manifest describing the available services, capabilities, an
       {
         "id": "pricing",
         "name": "Dynamic Pricing",
-        "description": "Adjusts prices based on demand signals",
+        "description": "Ingests pricing commands and publishes pricing events",
         "type": "pricing-engine",
-        "accepts": ["DemandSignalReceived", "CompetitorPriceChanged", "InventoryUpdated"],
-        "produces": ["AdjustPrice", "FlagAnomaly"],
+        "accepts": ["AdjustPrice", "FlagAnomaly"],
+        "produces": ["PriceAdjusted", "AnomalyFlagged"],
         "status": "paused"
       }
     ]
@@ -517,6 +542,7 @@ Capabilities are the building blocks of OAP. They define specific actions within
 | `schema` | string | yes | URL to the JSON Schema for this capability |
 | `extends` | string | no | Parent capability this extends |
 | `status` | string | no | `"planned"` if not yet available; omitted if active |
+| `endpoints` | array | no | Machine-readable HTTP endpoints exposed by this capability. Each entry: `{ method, path, description }`. Paths are relative to `rest.endpoint`. HTTP method signals read (GET) vs write (POST/DELETE/etc.). Consumers use this to discover catalogue URLs and determine mutability without reading the spec. |
 
 ### Core Capabilities
 
@@ -524,7 +550,7 @@ Capabilities are the building blocks of OAP. They define specific actions within
 |---|---|
 | `io.oap.agents.registry` | Register, remove, list, get agents |
 | `io.oap.agents.events` | Send events to agents, list recent events |
-| `io.oap.agents.commands` | List commands produced by agents |
+| `io.oap.agents.commands` | Discover command types this service accepts and send commands |
 | `io.oap.observability.tracing` | Execution traces — what happened when an agent processed an event |
 
 ### Extension Capabilities
@@ -792,12 +818,42 @@ All OAP REST endpoints use standard HTTP status codes with a consistent error bo
 
 ### Protocol Version
 
-OAP uses **date-based versioning** (following UCP's pattern): `"2025-07-01"`.
+OAP uses **date-based versioning**: a `YYYY-MM-DD` string that appears in:
+- The `/.well-known/oap` manifest root — `oap.version`
+- Each service definition — `services["io.oap.*"].version`
+- Each capability definition — `capabilities[*].version`
 
-The version appears in:
-- The `/.well-known/oap` manifest root
-- Each service definition
-- Each capability definition
+The version string is a **single source of truth that lives in the files themselves**. There is no separate config file or environment variable. When a release is cut, `scripts/release.sh` stamps the new date atomically across all files.
+
+### How the Version Gets Bumped — Release Script
+
+The release script (`scripts/release.sh`) handles all version stamping. Never manually edit version strings across files.
+
+```sh
+# Cut a stable release, stamp protocol version to today
+./scripts/release.sh 1.0.0
+
+# Pre-release with an explicit protocol version date
+./scripts/release.sh 1.1.0 --prerelease --protocol-version 2026-04-10
+```
+
+**What `--protocol-version` does:**
+
+1. Auto-detects the current version string already in the files (e.g. `2025-07-01`)
+2. Replaces it with the new date in three passes:
+   - `"version": "OLD"` → `"version": "NEW"` in all `.json` and `.svelte` files under `protocol/`, `specs/`, `website/src/`
+   - `**Version:** OLD` → `**Version:** NEW` in all Markdown spec pages (`specs/**/*.md`)
+   - `` `"OLD"` `` → `` `"NEW"` `` for inline backtick references in Markdown body text
+3. Shows `git diff --stat` and asks for confirmation before committing
+4. Commits as `chore: stamp protocol version to YYYY-MM-DD for release vX.Y.Z` and pushes to main
+5. Then creates the git tag and GitHub release
+
+**What it deliberately does NOT touch:**
+
+- `time`, `startedAt`, `completedAt` fields in CloudEvent examples — those are illustrative timestamps, not version signals
+- `scripts/release.sh` itself
+
+**Default behaviour:** if `--protocol-version` is omitted, it defaults to today's date (`date +%Y-%m-%d`).
 
 ### Compatibility Rules
 

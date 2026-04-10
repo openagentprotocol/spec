@@ -79,7 +79,7 @@
 				<li><a href="/docs/agents/registry">Registry</a><span>Register, list, and remove agents</span></li>
 				<li><a href="/docs/agents/lifecycle">Lifecycle</a><span>Pause and resume agents</span></li>
 				<li><a href="/docs/agents/events">Events</a><span>Send events to agents</span></li>
-				<li><a href="/docs/agents/commands">Commands</a><span>Observe produced commands</span></li>
+				<li><a href="/docs/agents/commands">Commands</a><span>Accept and catalogue commands</span></li>
 				<li><a href="/docs/agents/memory">Memory</a><span>View agent memory state</span></li>
 			</ul>
 		</section>

@@ -12,16 +12,16 @@ OAP (Open Agent Protocol) is an open protocol that standardises **agent interope
 
 Anyone who has something to offer — a person, a business, a service, an AI agent, a sensor — can expose an OAP manifest describing what they accept and what they produce. Instead of (or alongside) building a website, they expose a `/.well-known/oap` endpoint that any agent in the world can discover and interact with.
 
-| Who | Accepts (events) | Produces (commands) |
+| Who | Accepts (commands) | Produces (events) |
 |---|---|---|
-| Freelance translator | `TranslationRequested` | `TranslationCompleted` |
-| Contract negotiator | `ContractProposed`, `CounterOfferReceived` | `ProposeCounter`, `AcceptContract` |
-| IoT temperature sensor | — (pushes events) | `TemperatureReading` |
-| Pricing engine | `DemandSignalReceived`, `CompetitorPriceChanged` | `AdjustPrice`, `FlagAnomaly` |
-| Code reviewer | `PullRequestOpened` | `ReviewCompleted`, `RequestChanges` |
-| Approval workflow | `ApprovalRequested` | `ApprovalGranted`, `ApprovalDenied` |
+| Freelance translator | `TranslateDocument` | `DocumentTranslated` |
+| Contract negotiation service | `ProposeCounter`, `AcceptContract` | `CounterProposed`, `ContractAccepted` |
+| IoT temperature sensor | `ReadTemperature` | `TemperatureRead`, `TemperatureAlarm` |
+| Pricing engine | `AdjustPrice`, `FlagAnomaly` | `PriceAdjusted`, `AnomalyFlagged` |
+| Code review service | `ReviewPullRequest` | `ReviewCompleted`, `ChangesRequested` |
+| Approval workflow | `RequestApproval` | `ApprovalGranted`, `ApprovalDenied` |
 
-**OAP doesn't care how the agent works internally.** It only cares about the interaction surface: what events go in, what commands come out, and how to discover the agent.
+**OAP doesn't care how the service works internally.** It only cares about the interaction surface: what commands go in, what events come out, and how to discover the service.
 
 ## Design Principles
 
@@ -31,7 +31,7 @@ Anyone who has something to offer — a person, a business, a service, an AI age
 4. **Transport-agnostic** — the same agent semantics work over REST, MCP, A2A, or gRPC
 5. **Modular capabilities** — implementers choose which capabilities to support; consumers discover what's available at runtime
 6. **LLM-readable** — JSON Schema is the canonical format because LLMs can read, generate, and reason about JSON natively
-7. **Implementation-agnostic** — OAP defines the interaction surface (events in, commands out); it never prescribes how an agent processes events internally
+7. **Implementation-agnostic** — OAP defines the interaction surface (commands in, events out); it never prescribes how a service processes commands internally
 
 ## Protocol Stack
 

@@ -109,6 +109,7 @@ Each capability object has these fields:
 | `schema` | URL to the **JSON Schema** for this capability's data structures — e.g. `registry.json`, `events.json`. This is a JSON Schema file, not an OpenAPI spec. Do not confuse with `rest.openapi` (see Transport Bindings below). |
 | `status` | `active`, `partial`, or `planned` (omitted means active) |
 | `extends` | Parent capability name, if this extends another |
+| `endpoints` | Machine-readable list of HTTP endpoints exposed by this capability. Paths are relative to `rest.endpoint`. Each entry has a `method` (GET/POST/DELETE/etc.) and a `path`. The HTTP method signals whether the operation is a read (GET) or a write (POST/DELETE/etc.). Consumers use this to discover catalogue URLs and determine mutability without reading the spec page. |
 
 ### Capability Status
 
