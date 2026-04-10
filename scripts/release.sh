@@ -141,8 +141,12 @@ else
     exit 0
   fi
   git add -A
-  git commit -m "chore: stamp protocol version to ${PROTOCOL_VERSION} for release ${TAG}"
-  git push origin main
+  if git diff --cached --quiet; then
+    echo "No file changes after stamp (already at $PROTOCOL_VERSION) — skipping commit."
+  else
+    git commit -m "chore: stamp protocol version to ${PROTOCOL_VERSION} for release ${TAG}"
+    git push origin main
+  fi
 fi
 
 # Step 2: Create and push the tag
