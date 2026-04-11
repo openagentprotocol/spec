@@ -5,64 +5,26 @@
   "description": "Schema for the command ingestion and discovery capability (io.oap.agents.commands).",
   "$defs": {
     "command": {
-      "type": "object",
-      "description": "A command sent to an OAP-compliant service. Uses the CloudEvent 1.0 specification as wire format. The data property is validated against the JSON Schema at the dataschema URI, which is hosted by the ingestion API.",
-      "required": ["specversion", "id", "source", "type", "datacontenttype", "dataschema", "time", "data"],
-      "properties": {
-        "specversion": {
-          "type": "string",
-          "const": "1.0",
-          "description": "CloudEvent specification version. Always '1.0'."
-        },
-        "id": {
-          "type": "string",
-          "description": "Unique message identifier (UUID recommended)."
-        },
-        "source": {
-          "type": "string",
-          "format": "uri",
-          "description": "URI identifying the sender (e.g. a Process Manager, a UI, another service)."
-        },
-        "type": {
-          "type": "string",
-          "description": "Command type identifier (e.g. ProposeCounter, SubmitOrder). Must match a type in the command catalogue."
-        },
-        "datacontenttype": {
-          "type": "string",
-          "const": "application/json",
-          "description": "Content type of data. Always 'application/json'."
-        },
-        "dataschema": {
-          "type": "string",
-          "format": "uri",
-          "description": "URI to the JSON Schema for the data property. Hosted by the ingestion API. The API dereferences this URI and validates data against it before queuing."
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO 8601 timestamp of when the command was created."
-        },
-        "data": {
-          "type": "object",
-          "description": "The command payload. Structure is domain-specific and validated against the schema at dataschema.",
-          "additionalProperties": true
-        }
-      },
-      "additionalProperties": false
+      "$ref": "../cloudEvent.json#/$defs/cloudEvent",
+      "description": "A command sent to an OAP-compliant service. CloudEvent 1.0 envelope — the type field must match a type in the command catalogue, and the data property is validated against the JSON Schema at the dataschema URI before the command is queued."
     },
     "commandCatalogueEntry": {
       "type": "object",
-      "description": "An entry in the command catalogue — one available command type with its schema URI.",
-      "required": ["type", "dataschema"],
+      "description": "An entry in the command catalogue — one available command type with its schema name, version, and dataschema URI.",
+      "required": ["schema", "version", "dataschema"],
       "properties": {
-        "type": {
+        "schema": {
           "type": "string",
-          "description": "Command type identifier."
+          "description": "Command schema name in kebab-case (e.g. propose-counter, submit-order). Used as the {schema} path segment in GET /commands/{schema}/{version}. Distinct from the CloudEvent 'type' field."
+        },
+        "version": {
+          "type": "string",
+          "description": "Schema version string (e.g. 1.0, 2.1). Used as the {version} path segment in GET /commands/{schema}/{version}. First-class field — callers do not need to parse the dataschema URI to determine the version."
         },
         "dataschema": {
           "type": "string",
           "format": "uri",
-          "description": "URI to the JSON Schema for this command's data payload."
+          "description": "Resolvable URI to the JSON Schema for this command's data payload. Canonical value for the dataschema field of a CloudEvent command. Kept for CloudEvent compatibility."
         },
         "description": {
           "type": "string",

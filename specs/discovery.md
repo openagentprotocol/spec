@@ -158,14 +158,14 @@ Each service declares how it can be reached:
 ```json
 "rest": {
   "openapi": "https://openagentprotocol.io/v1/services/agents/openapi.json",
-  "endpoint": "http://localhost:5100/"
+  "endpoint": "https://your.compliant.oap.endpoint/"
 },
 "mcp": {
   "transport": "stdio",
   "server": "oap-mcp"
 },
 "a2a": {
-  "agent_card_url": "http://localhost:5100/.well-known/agent.json"
+  "agent_card_url": "https://your.compliant.oap.endpoint/.well-known/agent.json"
 }
 ```
 

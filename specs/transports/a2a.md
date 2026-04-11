@@ -17,7 +17,7 @@ A2A (Google Agent-to-Agent) enables multi-agent coordination. Agents can expose 
 
 ```json
 "a2a": {
-  "agent_card_url": "http://localhost:5100/.well-known/agent.json"
+  "agent_card_url": "https://your.compliant.oap.endpoint/.well-known/agent.json"
 }
 ```
 

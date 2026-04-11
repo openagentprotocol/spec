@@ -16,7 +16,7 @@ The `rest.endpoint` field in the discovery manifest is the **consumer-facing bas
 |---|---|---|
 | `https://app.example.com/` | `/agents` | `https://app.example.com/agents` |
 | `https://app.agenthost.example/oap/` | `/agents` | `https://app.agenthost.example/oap/agents` |
-| `http://localhost:5100` | `/agents` | `http://localhost:5100/agents` |
+| `https://your.compliant.oap.endpoint` | `/agents` | `https://your.compliant.oap.endpoint/agents` |
 
 Paths are **never** resolved relative to the domain root unless `rest.endpoint` is at the domain root.
 

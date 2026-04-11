@@ -387,7 +387,7 @@ This returns a JSON manifest describing the available services, capabilities, an
         "spec": "https://openagentprotocol.io/specs/agents",
         "rest": {
           "openapi": "https://openagentprotocol.io/services/agents/openapi.json",
-          "endpoint": "http://localhost:5100/"
+          "endpoint": "https://your.compliant.oap.endpoint/"
         },
         "mcp": {
           "transport": "stdio",
@@ -400,7 +400,7 @@ This returns a JSON manifest describing the available services, capabilities, an
         "spec": "https://openagentprotocol.io/specs/observability",
         "rest": {
           "openapi": "https://openagentprotocol.io/services/observability/openapi.json",
-          "endpoint": "http://localhost:5100/"
+          "endpoint": "https://your.compliant.oap.endpoint/"
         }
       }
     },
@@ -486,10 +486,10 @@ This returns a JSON manifest describing the available services, capabilities, an
       {
         "id": "negotiation",
         "name": "Contract Negotiation",
-        "description": "Evaluates contract proposals and produces counter-offers",
-        "type": "negotiator",
-        "accepts": ["ContractProposed", "CounterOfferReceived", "TermsUpdated"],
-        "produces": ["ProposeCounter", "AcceptContract", "RejectContract"],
+        "description": "Ingests negotiation commands and publishes negotiation events",
+        "type": "negotiation-service",
+        "accepts": ["ProposeCounter", "AcceptContract", "RejectContract"],
+        "produces": ["CounterProposed", "ContractAccepted", "ContractRejected"],
         "status": "running"
       },
       {
@@ -598,14 +598,14 @@ Each service declares how it can be reached. A consumer chooses the transport th
 ```json
 "rest": {
   "openapi": "https://openagentprotocol.io/services/agents/openapi.json",
-  "endpoint": "http://localhost:5100/"
+  "endpoint": "https://your.compliant.oap.endpoint/"
 },
 "mcp": {
   "transport": "stdio",
   "server": "oap-mcp"
 },
 "a2a": {
-  "agent_card_url": "http://localhost:5100/.well-known/agent.json"
+  "agent_card_url": "https://your.compliant.oap.endpoint/.well-known/agent.json"
 }
 ```
 
