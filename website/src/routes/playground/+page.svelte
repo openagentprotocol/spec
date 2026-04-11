@@ -1,5 +1,5 @@
 <script>
-	let baseUrl = $state('http://localhost:5100');
+	let baseUrl = $state('');
 	let discovering = $state(false);
 	let discoverError = $state('');
 	let manifest = $state(null);
@@ -39,6 +39,18 @@
 	let hasUnresolvedParams = $derived(/\{[^}]+\}/.test(resolvedPath));
 
 	let isPostCommands = $derived(activeMethod === 'POST' && !hasUnresolvedParams && activePath.endsWith('/commands'));
+
+	// Auto-populate the CloudEvent template whenever POST /commands becomes reachable
+	// (covers the case where the user fills in path params after selecting the endpoint)
+	$effect(() => {
+		if (isPostCommands && requestBody === '') {
+			if (commandCatalogue.length === 0) {
+				loadCommandCatalogue().then(() => buildCommandTemplate());
+			} else {
+				buildCommandTemplate();
+			}
+		}
+	});
 
 	// Build the Authorization / API-key header value from the declared scheme and the
 	// credential the user typed. Returns an object to spread into fetch headers.
@@ -136,18 +148,26 @@
 			if (!res.ok) return;
 			const json = await res.json();
 			commandCatalogue = json.commands ?? [];
-			if (commandCatalogue.length > 0) selectedCommandType = commandCatalogue[0].type;
+			if (commandCatalogue.length > 0) selectedCommandType = commandCatalogue[0].schema;
 		} catch { /* silently fail */ }
 	}
 
+	// Convert kebab-case catalogue schema name to PascalCase CloudEvent type
+	// e.g. 'propose-counter' → 'ProposeCounter'
+	function schemaToCloudEventType(schema) {
+		if (!schema) return 'YourCommandType';
+		return schema.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+	}
+
 	function buildCommandTemplate() {
-		const found = commandCatalogue.find((c) => c.type === selectedCommandType);
+		const found = commandCatalogue.find((c) => c.schema === selectedCommandType);
+		const cloudEventType = schemaToCloudEventType(found?.schema ?? selectedCommandType);
 		requestBody = JSON.stringify(
 			{
 				specversion: '1.0',
 				id: crypto.randomUUID(),
 				source: 'https://playground.openagentprotocol.io',
-				type: selectedCommandType || 'YourCommandType',
+				type: cloudEventType,
 				datacontenttype: 'application/json',
 				dataschema: found?.dataschema ?? '',
 				time: new Date().toISOString(),
@@ -237,7 +257,7 @@
 				<input
 					class="url-input"
 					type="url"
-					placeholder="http://localhost:5100"
+					placeholder="https://your.compliant.oap.endpoint"
 					bind:value={baseUrl}
 					spellcheck="false"
 					autocomplete="off"
@@ -381,11 +401,11 @@
 										onchange={onCommandTypeChange}
 									>
 										{#each commandCatalogue as cmd}
-											<option value={cmd.type}>{cmd.type}</option>
+											<option value={cmd.schema}>{cmd.schema}</option>
 										{/each}
 									</select>
-									{#if commandCatalogue.find(c => c.type === selectedCommandType)?.description}
-										<p class="field-hint">{commandCatalogue.find(c => c.type === selectedCommandType).description}</p>
+									{#if commandCatalogue.find(c => c.schema === selectedCommandType)?.description}
+										<p class="field-hint">{commandCatalogue.find(c => c.schema === selectedCommandType).description}</p>
 									{/if}
 								</div>
 							{/if}

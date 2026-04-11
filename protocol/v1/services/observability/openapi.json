@@ -15,7 +15,7 @@
       "description": "OAP-compliant endpoint base URL (from the rest.endpoint field in the /.well-known/oap manifest). All API paths below are appended to this base URL.",
       "variables": {
         "endpoint": {
-          "default": "http://localhost:5100"
+          "default": "https://your.compliant.oap.endpoint"
         }
       }
     }

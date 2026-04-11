@@ -15,7 +15,7 @@
         "spec": "https://openagentprotocol.io/specs/agents",
         "rest": {
           "openapi": "https://openagentprotocol.io/v1/services/agents/openapi.json",
-          "endpoint": "http://localhost:5100/"
+          "endpoint": "https://your.compliant.oap.endpoint/"
         },
         "mcp": {
           "transport": "stdio",
@@ -28,7 +28,7 @@
         "spec": "https://openagentprotocol.io/specs/observability",
         "rest": {
           "openapi": "https://openagentprotocol.io/v1/services/observability/openapi.json",
-          "endpoint": "http://localhost:5100/"
+          "endpoint": "https://your.compliant.oap.endpoint/"
         }
       }
     },

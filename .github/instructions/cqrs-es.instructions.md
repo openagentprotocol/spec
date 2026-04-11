@@ -148,13 +148,15 @@ Commands and Events both use the **CloudEvent 1.0 specification** as wire format
 {
   "commands": [
     {
-      "type": "ProposeCounter",
-      "dataschema": "https://api.example.com/schemas/ProposeCounter/1.0",
+      "schema": "propose-counter",
+      "version": "1.0",
+      "dataschema": "https://api.example.com/commands/propose-counter/1.0",
       "description": "Propose a counter-offer in a contract negotiation"
     },
     {
-      "type": "AcceptContract",
-      "dataschema": "https://api.example.com/schemas/AcceptContract/1.0",
+      "schema": "accept-contract",
+      "version": "1.0",
+      "dataschema": "https://api.example.com/commands/accept-contract/1.0",
       "description": "Accept the current contract terms"
     }
   ]
@@ -235,7 +237,7 @@ All phases below have been implemented. This section serves as a record of what 
 ### Phase 1 — Schemas (`protocol/v1/schemas/`)
 
 1. **`agents/registry.json`** — renamed `agentDescriptor/agentRegistration/agentList` → `serviceDescriptor/serviceRegistration/serviceList`; `accepts` = commands ingested, `produces` = events published
-2. **`agents/commands.json`** — replaced custom shape with CloudEvent 1.0; replaced `commandList` with `commandCatalogue` (entries: `{type, dataschema, description}`)
+2. **`agents/commands.json`** — replaced custom shape with CloudEvent 1.0; replaced `commandList` with `commandCatalogue` (entries: `{schema, version, dataschema, description}`); `command` and `event` defs now `$ref` the shared `cloudEvent.json` envelope
 3. **`agents/events.json`** — replaced custom shape with CloudEvent 1.0
 4. **`observability/tracing.json`** — `agentId/inputEvent/outputCommands` → `serviceId/inputCommand/outputEvents`
 
@@ -295,6 +297,22 @@ The `dataschema` URI in `GET /commands` catalogue entries points to `GET /comman
 
 ---
 
+### Catalogue entry — `schema` + `version` fields (replaces `type`)
+
+`commandCatalogueEntry` now requires `schema`, `version`, and `dataschema` (mandatory) plus `description` (optional). The old `type` field is removed.
+
+- `schema` — kebab-case command schema name (e.g. `propose-counter`). Used as the `{schema}` path segment in `GET /commands/{schema}/{version}`. Distinct from the CloudEvent `type` field.
+- `version` — version string (e.g. `1.0`). First-class field so callers never need to parse `dataschema` to determine the version.
+- `dataschema` — retained for CloudEvent compatibility. Points to `GET /commands/{schema}/{version}`. URI uses kebab-case (e.g. `.../commands/propose-counter/1.0`).
+
+The CloudEvent `type` field on the wire envelope remains PascalCase (e.g. `ProposeCounter`). That is different from the catalogue `schema` name.
+
+### Shared CloudEvent envelope — `cloudEvent.json`
+
+A new top-level schema file `protocol/v1/schemas/cloudEvent.json` defines the canonical `$defs/cloudEvent` shape. `commands.json#/$defs/command` and `events.json#/$defs/event` both `$ref` this instead of repeating the eight fields inline. This is the single source of truth for the CloudEvent envelope and the template used by playground tooling for `POST /commands`.
+
+---
+
 ## 10. What Does NOT Change
 
 - The capability names (`io.oap.agents.*`) — these are protocol namespaces, changing them is a breaking version change
@@ -306,7 +324,7 @@ The `dataschema` URI in `GET /commands` catalogue entries points to `GET /comman
 ## 10. Implementation Rules
 
 - Never rename capability namespace strings (e.g. `io.oap.agents.commands`) — these are versioned identifiers
-- Every CloudEvent `dataschema` URI must use the versioned path pattern: `https://api.example.com/schemas/{Type}/{version}` (e.g. `https://api.example.com/schemas/ProposeCounter/1.0`). Do NOT use the old flat `.json` pattern.
+- Every CloudEvent `dataschema` URI must use the versioned path pattern: `https://api.example.com/commands/{schema}/{version}` where `{schema}` is kebab-case (e.g. `https://api.example.com/commands/propose-counter/1.0`). Do NOT use the old flat `.json` pattern or PascalCase schema names in the URI.
 - `POST /commands` returns `201` (not `202`) — the command is accepted and queued; 201 signals the resource was created in the queue
 - Schema validation is synchronous; queuing is what happens after validation passes
 - The PM / AI Brain / Process Manager concept belongs in the `general.instructions.md` context section, not in the OAP spec itself (it is a caller pattern, not a protocol primitive)
