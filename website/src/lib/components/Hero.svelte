@@ -1,5 +1,11 @@
 <script>
 	import Logo from '$lib/components/Logo.svelte';
+
+	const sha = import.meta.env.VITE_GIT_SHA;
+	const buildTime = import.meta.env.VITE_BUILD_TIME;
+	const shortSha = sha ? sha.slice(0, 7) : null;
+	const buildDate = buildTime ? new Date(buildTime).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }) : null;
+	const commitUrl = sha ? `https://github.com/openagentprotocol/spec/commit/${sha}` : null;
 </script>
 
 <section class="hero">
@@ -21,6 +27,11 @@
 			<a href="/docs" class="btn-primary">Read the docs</a>
 			<a href="https://github.com/openagentprotocol/spec" target="_blank" rel="noopener" class="btn-secondary">View on GitHub</a>
 		</div>
+		{#if shortSha}
+		<p class="hero-build">
+			<a href={commitUrl} target="_blank" rel="noopener">{shortSha}</a>{#if buildDate} &middot; {buildDate}{/if}
+		</p>
+		{/if}
 	</div>
 </section>
 
@@ -133,6 +144,23 @@
 	.btn-secondary:hover {
 		border-color: #3b82f6;
 		color: #ffffff;
+	}
+
+	.hero-build {
+		margin-top: 2rem;
+		font-size: 0.75rem;
+		color: rgba(148, 163, 184, 0.5);
+		letter-spacing: 0.02em;
+	}
+
+	.hero-build a {
+		color: rgba(148, 163, 184, 0.5);
+		text-decoration: none;
+		font-family: monospace;
+	}
+
+	.hero-build a:hover {
+		color: #94a3b8;
 	}
 
 	@media (max-width: 480px) {
