@@ -12,8 +12,8 @@ Commands use the **CloudEvent 1.0 specification** as wire format. The CloudEvent
 |---|---|---|---|
 | `specversion` | string | yes | Always `"1.0"` |
 | `id` | string | yes | Unique message ID (UUID recommended) |
-| `source` | string (URI) | yes | URI identifying the sender |
-| `type` | string | yes | Command type identifier in PascalCase (e.g. `ProposeCounter`, `SubmitOrder`) |
+| `source` | string (URI) | yes | URI identifying the sender — set by the caller to any URI they control (e.g. `https://pm.example.com/negotiation-agent`). This field identifies **who sent the command** for observability and audit. It must not be set to a fixed service-specific constant — doing so destroys caller identity and violates CloudEvent semantics (the `source + id` pair is the globally unique event identifier). Implementations that need to route commands to a backend queue or handler must derive the routing key from `type`, not `source`. |
+| `type` | string | yes | Command type identifier in PascalCase (e.g. `ProposeCounter`, `SubmitOrder`). This is the natural routing key — implementations should use `type` to determine which backend handler, queue, or processor receives the command. |
 | `datacontenttype` | string | yes | Always `"application/json"` |
 | `dataschema` | string (URI) | yes | URI to the JSON Schema for `data` — hosted by the ingestion API at `GET /commands/{schema}/{version}` |
 | `time` | string (ISO 8601) | yes | When the command was created |
