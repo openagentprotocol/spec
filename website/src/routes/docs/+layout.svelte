@@ -8,11 +8,14 @@
 		sidebarOpen = false;
 	});
 
-	const sha = import.meta.env.VITE_GIT_SHA;
-	const buildTime = import.meta.env.VITE_BUILD_TIME;
-	const shortSha = sha ? sha.slice(0, 7) : null;
-	const buildDate = buildTime ? new Date(buildTime).toUTCString().replace(':00 GMT', ' UTC') : null;
-	const commitUrl = sha ? `https://github.com/openagentprotocol/spec/commit/${sha}` : null;
+	const gitTag = import.meta.env.VITE_GIT_TAG;
+	const isCleanTag = gitTag ? /^v\d+\.\d+\.\d+$/.test(gitTag) : false;
+	const shaMatch = gitTag ? gitTag.match(/-g([0-9a-f]+)$/) : null;
+	const tagUrl = isCleanTag
+		? `https://github.com/openagentprotocol/spec/releases/tag/${gitTag}`
+		: shaMatch
+			? `https://github.com/openagentprotocol/spec/commit/${shaMatch[1]}`
+			: null;
 </script>
 
 <div class="docs-shell">
@@ -33,9 +36,9 @@
 
 	<div class="docs-body">
 		{@render children()}
-		{#if shortSha}
+		{#if gitTag}
 		<footer class="build-info">
-			Built from <a href={commitUrl} target="_blank" rel="noopener">{shortSha}</a>{#if buildDate} &middot; {buildDate}{/if}
+			{#if tagUrl}<a href={tagUrl} target="_blank" rel="noopener">{gitTag}</a>{:else}{gitTag}{/if}
 		</footer>
 		{/if}
 	</div>

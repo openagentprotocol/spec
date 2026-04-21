@@ -868,6 +868,15 @@ The release script (`scripts/release.sh`) handles all version stamping. Never ma
 - `time`, `startedAt`, `completedAt` fields in CloudEvent examples — those are illustrative timestamps, not version signals
 - `scripts/release.sh` itself
 
+### Website Version Display
+
+The website hero and every docs page footer display the same version string. It is injected at build time via the `VITE_GIT_TAG` environment variable, which CI sets by running `git describe --tags --always`. This produces:
+
+- **On a tagged release** (e.g. after `release.sh 0.3.8`) → `v0.3.8`, linking to the GitHub release
+- **Between releases** (e.g. commits after a tag) → `v0.3.8-14-gabcdef1`, linking to the specific commit
+
+This keeps the version on the website identical to the tag shown in the README. Never reintroduce separate `VITE_GIT_SHA` or `VITE_BUILD_TIME` variables for version display purposes.
+
 **Default behaviour:** if `--protocol-version` is omitted, it defaults to today's date (`date +%Y-%m-%d`).
 
 ### Compatibility Rules

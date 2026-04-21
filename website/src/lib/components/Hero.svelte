@@ -1,11 +1,14 @@
 <script>
 	import Logo from '$lib/components/Logo.svelte';
 
-	const sha = import.meta.env.VITE_GIT_SHA;
-	const buildTime = import.meta.env.VITE_BUILD_TIME;
-	const shortSha = sha ? sha.slice(0, 7) : null;
-	const buildDate = buildTime ? new Date(buildTime).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }) : null;
-	const commitUrl = sha ? `https://github.com/openagentprotocol/spec/commit/${sha}` : null;
+	const gitTag = import.meta.env.VITE_GIT_TAG;
+	const isCleanTag = gitTag ? /^v\d+\.\d+\.\d+$/.test(gitTag) : false;
+	const shaMatch = gitTag ? gitTag.match(/-g([0-9a-f]+)$/) : null;
+	const tagUrl = isCleanTag
+		? `https://github.com/openagentprotocol/spec/releases/tag/${gitTag}`
+		: shaMatch
+			? `https://github.com/openagentprotocol/spec/commit/${shaMatch[1]}`
+			: null;
 </script>
 
 <section class="hero">
@@ -27,9 +30,9 @@
 			<a href="/docs" class="btn-primary">Read the docs</a>
 			<a href="https://github.com/openagentprotocol/spec" target="_blank" rel="noopener" class="btn-secondary">View on GitHub</a>
 		</div>
-		{#if shortSha}
+		{#if gitTag}
 		<p class="hero-build">
-			<a href={commitUrl} target="_blank" rel="noopener">{shortSha}</a>{#if buildDate} &middot; {buildDate}{/if}
+			{#if tagUrl}<a href={tagUrl} target="_blank" rel="noopener">{gitTag}</a>{:else}{gitTag}{/if}
 		</p>
 		{/if}
 	</div>
