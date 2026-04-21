@@ -155,9 +155,9 @@ else
   sed -i "s|blob/${CURRENT_README_TAG}/|blob/${TAG}/|g" README.md
   sed -i "s|releases/tag/${CURRENT_README_TAG}|releases/tag/${TAG}|g" README.md
   if [ "$PRERELEASE" = true ]; then
-    sed -i "s/The most recent pre-release is \[${CURRENT_README_TAG}\]([^)]*)/The most recent pre-release is [${TAG}](${REPO_URL}\/releases\/tag\/${TAG})/g" README.md
+    sed -i "s|The most recent pre-release is \[${CURRENT_README_TAG}\]([^)]*)|The most recent pre-release is [${TAG}](${REPO_URL}/releases/tag/${TAG})|g" README.md
   else
-    sed -i "s/The most recent.*is \[${CURRENT_README_TAG}\]([^)]*)/The most recent stable release is [${TAG}](${REPO_URL}\/releases\/tag\/${TAG})/g" README.md
+    sed -i "s|The most recent.*is \[${CURRENT_README_TAG}\]([^)]*)|The most recent stable release is [${TAG}](${REPO_URL}/releases/tag/${TAG})|g" README.md
   fi
   git add README.md
   if git diff --cached --quiet; then
